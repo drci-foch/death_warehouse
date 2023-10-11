@@ -1,28 +1,67 @@
-from django.views.generic import ListView
+from django.shortcuts import render, redirect
 from .models import RecherchePatient
-
-from django.shortcuts import render
-
 from .forms import RecherchePatientForm
+from django.views.generic import ListView
 
 def home(request):
+    patients = []
+    message = ""
+
     if request.method == 'POST':
         form = RecherchePatientForm(request.POST)
         if form.is_valid():
-            # Traitez le formulaire ici (par exemple, enregistrez les données)
-            form.save()
+            # Le formulaire est valide, traitez-le ici pour effectuer la recherche
+            nom = form.cleaned_data.get('nom')
+            prenom = form.cleaned_data.get('prenom')
+            date_naiss = form.cleaned_data.get('date_naiss')
+            # Ajoutez d'autres champs à rechercher en fonction de votre modèle
+
+            # Effectuez la recherche dans la base de données
+            patients = RecherchePatient.objects.filter(nom=nom, prenom=prenom, date_naiss = date_naiss)
+            # Vous pouvez ajouter d'autres critères de recherche ici
+
+            if not patients:
+                message = "Aucun patient trouvé"
+        else:
+            message = "Le formulaire n'est pas valide"
+
     else:
         form = RecherchePatientForm()
-    
-    return render(request, 'death_warehouse_app/home.html', {'form': form})
 
+    context = {
+        'form': form,
+        'patients': patients,
+        'message': message,
+    }
+
+    return render(request, 'death_warehouse_app/home.html', context)
+
+
+def recherche(request):
+    patients = []  # Initialiser une liste vide pour stocker les résultats de la recherche
+
+    if request.method == 'POST':
+        form = RecherchePatientForm(request.POST)
+        if form.is_valid():
+            # Le formulaire est valide, traitez-le ici pour effectuer la recherche
+            nom = form.cleaned_data.get('nom')
+            prenom = form.cleaned_data.get('prenom')
+            date_naiss = form.cleaned_data.get('date_naiss')
+
+            # Effectuez la recherche dans la base de données
+            patients = RecherchePatient.objects.filter(nom=nom, prenom=prenom, date_naiss=date_naiss)
+
+    else:
+        form = RecherchePatientForm()
+
+    context = {
+        'form': form,
+        'patients': patients,
+    }
+
+    return render(request, 'death_warehouse_app/home.html', context)
 
 class RecherchePatientListView(ListView):
     model = RecherchePatient
-    template_name = 'recherchepatient_list.html'  # Utilisez le chemin complet vers le modèle HTML
+    template_name = 'death_warehouse_app/home.html'  # Utilisez le chemin complet vers le modèle HTML
     context_object_name = 'patients'
-
-def traitement_formulaire(request):
-    # Redirigez l'utilisateur vers une autre page après le traitement
-    return render(request, 'template_de_confirmation.html')
-

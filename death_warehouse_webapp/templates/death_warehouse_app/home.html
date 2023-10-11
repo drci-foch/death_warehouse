@@ -41,14 +41,22 @@
     <i class="fi fi-tr-circle-book-open"></i>
     <h2>Moteur de Recherche</h2> 
     <h2>Décès enregistrés sur le fichier des personnes décédées de l'INSEE</h2>
-    <form method="post">
+    <form method="post" action="{% url 'home' %}">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="hidden" name="next" value="{% url 'traitement_formulaire' %}">
-        <button type="submit">Soumettre</button>
-    </form>
-    
-    
+        <button type="submit">Rechercher</button>
+      </form>
+      {% if patients %}
+        <h2>Résultats de la recherche :</h2>
+        <ul>
+          {% for patient in patients %}
+            <li>{{ patient.nom }} {{ patient.prenom }}</li>
+            </li>Date de naissance : {{ patient.date_naiss }}</li> 
+            </li>Date de décès : {{ patient.date_deces }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      
     
 </body>
 </html>
