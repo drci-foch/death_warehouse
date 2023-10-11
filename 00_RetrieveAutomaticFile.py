@@ -1,11 +1,14 @@
+# Auteur : Sarra Ben Yahia
+# Description : Scraper pour automatiser la tâche de retéléchargement des nouveaux fichiers màj par l'INSEE
+# TODO : Planifier le run
+
 import os
 import requests
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
-# URL du site à partir duquel vous souhaitez télécharger les fichiers
+
 site_url = 'https://www.data.gouv.fr/fr/datasets/fichier-des-personnes-decedees/'
-# Dossier local où vous souhaitez enregistrer les fichiers
 dossier_local = ".//deces_insee/"
 
 # Créer le dossier local s'il n'existe pas
@@ -32,12 +35,14 @@ def extraire_liens_fichiers(url):
 liens_fichiers = extraire_liens_fichiers(site_url)
 for lien in liens_fichiers:
     nom_fichier = os.path.basename(lien)
-    chemin_local = os.path.join(dossier_local, nom_fichier)
-    # Vérifier si le fichier existe déjà localement
-    if not os.path.exists(chemin_local):
-        print(f'Téléchargement de {nom_fichier}...')
-        telecharger_fichier(lien, dossier_local)
-    else:
-        print(f'{nom_fichier} existe déjà localement. Passer au fichier suivant.')
+    # Vérifier si le fichier commence par "deces"
+    if nom_fichier.startswith("deces"):
+        chemin_local = os.path.join(dossier_local, nom_fichier)
+        # Vérifier si le fichier existe déjà localement
+        if not os.path.exists(chemin_local):
+            print(f'Téléchargement de {nom_fichier}...')
+            telecharger_fichier(lien, dossier_local)
+        else:
+            print(f'{nom_fichier} existe déjà localement. Passer au fichier suivant.')
 
 print(f"L'étape 00_RetrieveAutomaticFile a été réalisée avec succès")
