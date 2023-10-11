@@ -18,7 +18,7 @@ def import_data_from_csv(file_path):
         for row in reader:
             # Vérifiez chaque champ et définissez des valeurs par défaut si elles sont manquantes
             nom = row.get('Nom', 'Nom manquant')
-            prenom = row.get('Prénom', 'Prénom Manquant')
+            prenom = row.get('Prenom', 'Prénom Manquant')
             
             date_naiss = row.get('Date de naissance', None)
             if date_naiss:
