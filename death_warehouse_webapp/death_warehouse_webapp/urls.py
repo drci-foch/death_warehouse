@@ -16,10 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from death_warehouse_app.views import RecherchePatientListView
-from django.views.generic import RedirectView
+from death_warehouse_app.views import RecherchePatientListView, home, traitement_formulaire
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='/patients/', permanent=True)),
+    path('', home, name='home'),
     path('patients/', RecherchePatientListView.as_view(), name='patients'),
+    path('traitement_formulaire/', traitement_formulaire, name='traitement_formulaire'),
 ]
+
+
