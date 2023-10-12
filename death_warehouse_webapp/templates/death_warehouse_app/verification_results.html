@@ -16,33 +16,29 @@
             text-align: center;
             margin: 0;
             padding: 0;
-        }
-        h1 {
-            color: #F7F7F7;
-        }
-        h2 {
-            color: #00487E;
+            background-color: #F2F2F2;
         }
         .banner {
-            background-color: #00487E;
+            background: linear-gradient(to bottom, #00487E, #002f4b);
             color: #F7F7F7;
-            padding: 10px;
+            padding: 20px 0;
         }
         .banner h1 {
             margin: 0;
             padding: 0;
+            font-size: 24px;
         }
-        .input-group {
-            display: inline-block;
-            margin-right: 10px;
+        .container {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
         }
-        .button {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 10px 20px;
-            background-color: #00487E;
-            color: #F7F7F7;
-            text-decoration: none;
+        h2 {
+            color: #00487E;
+            font-size: 18px;
         }
         table {
             border-collapse: collapse;
@@ -51,7 +47,7 @@
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 10px;
             text-align: center;
         }
         th {
@@ -61,45 +57,51 @@
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
+        .button {
+            background-color: #00487E;
+            color: #F7F7F7;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            margin: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="banner">
-        <h1>Résultats de vérification</h1>
+        <h1>Résultats</h1>
     </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Patient Existant</th>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Date de Naissance</th>
-                <th>Date de Décès</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for result in results %}
-                <tr>
-                    <td>{{ result.patient_exists }}</td>
-                    {% if result.patient_exists %}
-                        <td>{{ result.patient_details.nom }}</td>
-                        <td>{{ result.patient_details.prenom }}</td>
-                        <td>{{ result.patient_details.date_naiss }}</td>
-                        <td>{{ result.patient_details.date_deces }}</td>
-                    {% else %}
-                        <td>{{ result.patient_details.nom }}</td>
-                        <td>{{ result.patient_details.prenom }}</td>
-                        <td>{{ result.patient_details.date_naiss }}</td>
-                        <td>{{ result.patient_details.date_deces }}</td>
-                    {% endif %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div style="margin-bottom: 20px;"></div>
 
-    <!-- Bouton pour exporter en CSV -->
+    <!-- Boutons -->
     <a href="{% url 'export_results_csv' %}" class="button">Exporter en CSV</a>
-    <!-- Bouton pour revenir à la page d'accueil -->
     <a href="{% url 'home' %}" class="button">Retour à l'accueil</a>
+    <div class="container">
+        <h2>Résultats de vérification des patients</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Patient Existant</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Date de Naissance</th>
+                    <th>Date de Décès</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                    <tr>
+                        <td>{{ result.patient_exists }}</td>
+                        <td>{{ result.patient_details.nom }}</td>
+                        <td>{{ result.patient_details.prenom }}</td>
+                        <td>{{ result.patient_details.date_naiss }}</td>
+                        <td>{{ result.patient_details.date_deces }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

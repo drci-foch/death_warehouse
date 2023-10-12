@@ -1,48 +1,93 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Importation de fichiers</title>
+    
+    <!-- External CSS and JavaScript files -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
     <script type="text/javascript" src="{% static 'js/custom.js' %}"></script>
+    
+    <!-- Preconnect to external domains for better performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Font import from Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gabarito:wght@700&display=swap">
+    
+    <!-- Internal CSS -->
     <style>
         body {
             font-family: 'Gabarito', sans-serif;
             text-align: center;
             margin: 0;
             padding: 0;
+            background-color: #F2F2F2;
         }
-        h1 {
-            color: #F7F7F7;
-        }
-        h2 {
-            color: #00487E;
-        }
+        
         .banner {
-            background-color: #00487E;
+            background: linear-gradient(to bottom, #00487E, #002f4b);
             color: #F7F7F7;
-            padding: 10px;
+            padding: 20px 0;
         }
+        
         .banner h1 {
             margin: 0;
             padding: 0;
+            font-size: 24px;
         }
+        
+        .container {
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #00487E;
+            font-size: 18px;
+        }
+        
         .input-group {
-            display: inline-block;
-            margin-right: 10px;
+            margin: 10px 0;
         }
+        
+        .input-group label {
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+        }
+        
+        .input-group input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #DDD;
+            border-radius: 4px;
+        }
+        
         .button {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 10px 20px;
             background-color: #00487E;
             color: #F7F7F7;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
             text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .instructions {
+            text-align: left;
+            padding: 10px;
+            background-color: #C9C9C9;
+            color: #010101;
+            border-radius: 4px;
+            margin: 20px 0;
         }
     </style>
 </head>
@@ -50,14 +95,30 @@
     <div class="banner">
         <h1>Importation de fichiers</h1>
     </div>
+    <div class="container">
+        <h2>Choisissez un fichier à importer</h2>
+        <form method="post" enctype="multipart/form-data" action="{% url 'import_file' %}">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="{{ form.file.id_for_label }}">Sélectionnez un fichier (Excel ou CSV) :</label>
+                {{ form.file }}
+            </div>
+            <button type="submit" class="button">Importer</button>
+        </form>
+        <div class="instructions" style="background-color: #F2F2F2; color: #010101; padding: 15px; border-radius: 8px; margin-top: 20px;">
+            <h3 style="margin-bottom: 10px;">Comment importer un fichier :</h3>
+            <ul style="list-style-type: disc; padding-left: 20px;">
+                <li>Choisissez un fichier au format Excel ou CSV à importer.</li>
+                <li>Vérifiez que le fichier contient au moins les informations suivantes : nom, prénom et date de naissance du patient.</li>
+                <li>Assurez-vous que la date de naissance est au format JJ-MM-AAAA (jour-mois-année).</li>
+            </ul>
+        </div>
+        
+        
+        
+    </div>
 
-    <form method="post" enctype="multipart/form-data" action="{% url 'import_file' %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Importer</button>
-    </form>
-
-    <!-- Bouton pour revenir à la page d'accueil -->
+    <!-- Button to return to the homepage -->
     <a href="{% url 'home' %}" class="button">Retour à l'accueil</a>
 </body>
 </html>

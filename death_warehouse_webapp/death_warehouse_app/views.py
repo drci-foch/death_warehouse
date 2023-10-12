@@ -8,7 +8,7 @@ from django.http import HttpResponse
 import csv
 
 def home(request):
-    patients = []
+    patients = None
     message = ""
 
     if request.method == 'POST':
@@ -17,10 +17,7 @@ def home(request):
             nom = form.cleaned_data.get('nom')
             prenom = form.cleaned_data.get('prenom')
             date_naiss = form.cleaned_data.get('date_naiss')
-            patients = RecherchePatient.objects.filter(nom=nom, prenom__icontains=prenom, date_naiss=date_naiss)
-
-            if not patients:
-                message = "Aucun patient trouvé"
+            patients = RecherchePatient.objects.filter(nom__iexact=nom, prenom__icontains=prenom, date_naiss=date_naiss)
         else:
             message = "Le formulaire n'est pas valide"
     else:
@@ -57,11 +54,8 @@ def import_file(request):
                 except ValueError:
                     date_naiss_iso = None
 
-                patient = RecherchePatient.objects.filter(
-                    nom=row['Nom'],
-                    prenom__icontains=row['Prenom'],
-                    date_naiss=date_naiss_iso
-                ).first()
+                patient = RecherchePatient.objects.filter(nom__iexact=row['Nom'], prenom__icontains=row['Prenom'], date_naiss=date_naiss_iso).first()
+
 
                 if patient is not None:
                     verification_result = {
@@ -73,6 +67,7 @@ def import_file(request):
                             'date_deces': patient.date_deces.isoformat() if patient.date_deces else ""
                         }
                     }
+                    
                 else:
                     verification_result = {
                         'patient_exists': False,
