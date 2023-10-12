@@ -49,3 +49,8 @@ ul {
     box-sizing: border-box;
     max-width: 100%; /* Ajoutez cette ligne pour limiter la largeur */
 }
+/* Style pour le message "Aucun patient correspondant" */
+.no-patient-message {
+        color: #CC0D20;
+        font-weight: bold;
+    }

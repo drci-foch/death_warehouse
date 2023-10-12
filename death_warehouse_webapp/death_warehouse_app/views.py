@@ -50,16 +50,17 @@ def import_file(request):
                 date_naiss = row['Date de naissance']
 
                 try:
+                    # Essayer de convertir la date au format 'dd-mm-yyyy'
                     date_naiss_iso = datetime.strptime(date_naiss, '%d-%m-%Y').strftime('%Y-%m-%d')
                 except ValueError:
-                    date_naiss_iso = None
+                    # En cas d'erreur de format, définissez la date à une valeur par défaut ou à None
+                    date_naiss_iso = None  # ou une autre valeur par défaut si nécessaire
 
                 patient = RecherchePatient.objects.filter(nom__iexact=row['Nom'], prenom__icontains=row['Prenom'], date_naiss=date_naiss_iso).first()
 
-
                 if patient is not None:
                     verification_result = {
-                        'patient_exists': True,
+                        'patient_exists': "Trouvé",
                         'patient_details': {
                             'nom': patient.nom,
                             'prenom': patient.prenom,
@@ -67,19 +68,19 @@ def import_file(request):
                             'date_deces': patient.date_deces.isoformat() if patient.date_deces else ""
                         }
                     }
-                    
                 else:
                     verification_result = {
-                        'patient_exists': False,
+                        'patient_exists': "Non trouvé",
                         'patient_details': {
                             'nom': row['Nom'],
                             'prenom': row['Prenom'],
-                            'date_naiss': datetime.strptime(date_naiss, '%Y-%m-%d').strftime('%Y-%m-%d'),
+                            'date_naiss': date_naiss_iso if date_naiss_iso else "",
                             'date_deces': ""
                         }
                     }
 
                 verification_results.append(verification_result)
+
 
             request.session['verification_results'] = verification_results
 
