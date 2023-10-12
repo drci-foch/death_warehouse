@@ -14,3 +14,4 @@ document.querySelectorAll('input[type="reset"]').forEach(function (resetButton) 
         }
     });
 });
+

@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from .models import RecherchePatient
 from .forms import RecherchePatientForm, ImportFileForm
-from django.views.generic import ListView
 from datetime import datetime
 import pandas as pd
 from django.http import HttpResponse
 import csv
+import openpyxl
+
 
 def home(request):
     patients = None
@@ -98,7 +99,7 @@ def export_results_csv(request):
 
     if verification_results is not None:
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="verification_results.csv"'
+        response['Content-Disposition'] = 'attachment; filename="recherche_fichiers_deces.csv"'
 
         writer = csv.writer(response)
         writer.writerow(['patient_exists', 'nom', 'prenom', 'date_naiss', 'date_deces'])
@@ -111,6 +112,32 @@ def export_results_csv(request):
                 result['patient_details']['date_deces']
             ])
 
+        return response
+    else:
+        return HttpResponse("Aucun résultat de vérification à exporter.")
+
+
+def export_results_xlsx(request):
+    verification_results = request.session.get('verification_results')
+
+    if verification_results is not None:
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename="recherche_fichiers_deces.xlsx'
+
+        workbook = openpyxl.Workbook()
+        worksheet = workbook.active
+        worksheet.append(['patient_exists', 'nom', 'prenom', 'date_naiss', 'date_deces'])
+
+        for result in verification_results:
+            worksheet.append([
+                result['patient_exists'],
+                result['patient_details']['nom'],
+                result['patient_details']['prenom'],
+                result['patient_details']['date_naiss'],
+                result['patient_details']['date_deces']
+            ])
+
+        workbook.save(response)
         return response
     else:
         return HttpResponse("Aucun résultat de vérification à exporter.")
