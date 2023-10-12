@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,43 +16,53 @@
             padding: 0;
             background-color: #F2F2F2;
         }
+
         .banner {
             background: linear-gradient(to bottom, #00487E, #0079C0);
             color: #F7F7F7;
             padding: 20px 0;
         }
+
         .banner h1 {
             margin: 0;
             padding: 0;
             font-size: 24px;
         }
+
         .search-container {
             background-color: #FFFFFF;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             max-width: 700px;
-            margin: 20px auto; /* Vous avez défini "margin" deux fois, donc nous l'avons corrigé. */
-            text-align: center; /* Aligner le contenu au centre */
+            margin: 20px auto;
+            /* Vous avez défini "margin" deux fois, donc nous l'avons corrigé. */
+            text-align: center;
+            /* Aligner le contenu au centre */
         }
+
         h2 {
             color: #00487E;
             font-size: 18px;
         }
+
         .input-group {
             margin: 10px 0;
         }
+
         .input-group label {
             display: block;
             text-align: left;
             margin-bottom: 5px;
         }
+
         .input-group input {
-            width: 80%;
+            width: 100%;
             padding: 5px;
             border: 1px solid #DDD;
             border-radius: 4px;
         }
+
         .button {
             background-color: #00487E;
             color: #F7F7F7;
@@ -61,6 +72,7 @@
             text-decoration: none;
             cursor: pointer;
         }
+
         /* Même format pour les deux boutons */
         .button-secondary {
             background-color: #00487E;
@@ -70,73 +82,90 @@
             border-radius: 4px;
             text-decoration: none;
             cursor: pointer;
+            font-weight: normal;
+            /* Retire le style en gras */
         }
+
         /* Style pour le message "Aucun patient correspondant" */
         .no-patient-message {
-            display: block ; /* Masquer initialement le message */
+            display: block;
+            /* Masquer initialement le message */
             color: #CC0D20;
             font-weight: bold;
         }
+
+        .white-background {
+            /* Nouveau bloc blanc */
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            margin: 20px auto;
+        }
     </style>
 </head>
+
 <body>
     <div class="banner">
         <h1>Accueil</h1>
     </div>
     <div class="search-container">
-        <i class="fi-tr-circle-book-open"></i>
-        <h2>Moteur de Recherche</h2>
         <h2>Enregistrement des personnes décédées : INSEE et Hôpital Foch</h2>
-
- 
         <form method="post" action="{% url 'home' %}" id="search-form">
             {% csrf_token %}
             <div class="input-group">
                 <label for="{{ form.nom.id_for_label }}">Nom :</label>
-                <input type="text" name="{{ form.nom.name }}" id="{{ form.nom.id_for_label }}" value="{{ form.nom.value }}">
+                <input type="text" name="{{ form.nom.name }}" id="{{ form.nom.id_for_label }}"
+                    value="{{ form.nom.value }}">
             </div>
             <div class="input-group">
                 <label for="{{ form.prenom.id_for_label }}">Prénom :</label>
-                <input type="text" name="{{ form.prenom.name }}" id="{{ form.prenom.id_for_label }}" value="{{ form.prenom.value }}">
+                <input type="text" name="{{ form.prenom.name }}" id="{{ form.prenom.id_for_label }}"
+                    value="{{ form.prenom.value }}">
             </div>
             <div class="input-group">
                 <label for="{{ form.date_naiss.id_for_label }}">Date de naissance (AAAA-MM-JJ) :</label>
-                <input type="text" name="{{ form.date_naiss.name }}" id="{{ form.date_naiss.id_for_label }}" value="{{ form.date_naiss.value }}">
+                <input type="text" name="{{ form.date_naiss.name }}" id="{{ form.date_naiss.id_for_label }}"
+                    value="{{ form.date_naiss.value }}">
             </div>
             <button type="submit" class="button">Rechercher</button>
             <button type="button" class="button" id="reset-button">Réinitialiser</button>
         </form>
-        
+
         <script>
-        document.getElementById('reset-button').addEventListener('click', function () {
-            document.getElementById('{{ form.nom.id_for_label }}').value = '';
-            document.getElementById('{{ form.prenom.id_for_label }}').value = '';
-            document.getElementById('{{ form.date_naiss.id_for_label }}').value = '';
-        });
+            document.getElementById('reset-button').addEventListener('click', function () {
+                document.getElementById('{{ form.nom.id_for_label }}').value = '';
+                document.getElementById('{{ form.prenom.id_for_label }}').value = '';
+                document.getElementById('{{ form.date_naiss.id_for_label }}').value = '';
+            });
         </script>
-        
+
 
         {% if patients %}
         <h2>Résultats de la recherche :</h2>
         {% for patient in patients %}
-            {{ patient.nom }} {{ patient.prenom }} <br>
-            Date de naissance : {{ patient.date_naiss }} <br>
-            Date de décès : {{ patient.date_deces }}
+        {{ patient.nom }} {{ patient.prenom }} <br>
+        Date de naissance : {{ patient.date_naiss }} <br>
+        Date de décès : {{ patient.date_deces }}
         {% endfor %}
-    {% else %}
+        {% else %}
+
         <!-- Message "Aucun patient correspondant" -->
         <p class="no-patient-message" id="no-patient-message">Aucun patient correspondant dans la base</p>
-    {% endif %}
-    
-        
-        <div style="margin-bottom: 20px;"></div>
-        
-        <h2>Recherche par fichiers Excel/CSV</h2>
-        <a href="{% url 'import_file' %}" class="button-secondary">Importer un fichier</a>
+        {% endif %}
     </div>
 
+    <div class="white-background"> <!-- Nouveau bloc blanc -->
+        <h2>Recherche par fichiers Excel/CSV</h2>
+        <div style="margin-bottom: 20px;"></div>
 
-    <div class="search-info" style="background: linear-gradient(to bottom, #0079C0, #93BE1E); color: #F9FCFF; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 700px; text-align: left; line-height: 1;">
+        <a href="{% url 'import_file' %}" class="button-secondary">Importer un fichier</a>
+        <div style="margin-bottom: 20px;"></div>
+
+    </div>
+    <div class="search-info"
+        style="background: linear-gradient(to bottom, #0079C0, #93BE1E); color: #F9FCFF; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 700px; text-align: left; line-height: 1;">
         <div class="info-block">
             <h3>Comment faire une recherche?</h3>
             <ul>
@@ -146,11 +175,6 @@
             </ul>
         </div>
     </div>
-    
-    
-    
-            </ul>
-        </div>
-    </div>
 </body>
+
 </html>

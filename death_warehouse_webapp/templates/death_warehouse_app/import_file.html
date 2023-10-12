@@ -105,20 +105,26 @@
             </div>
             <button type="submit" class="button">Importer</button>
         </form>
-        <div class="instructions" style="background: linear-gradient(to bottom, #0079C0, #93BE1E); color: #F9FCFF; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 700px; text-align: left;">
-            <h3 style="margin-bottom: 10px;">Comment importer un fichier :</h3>
-            <ul style="list-style-type: disc; padding-left: 20px;">
-                <li>Choisissez un fichier au format Excel ou CSV à importer.</li>
-                <li>Vérifiez que le fichier contient au moins les informations suivantes : nom, prénom et date de naissance du patient.</li>
-                <li>Assurez-vous que la date de naissance est au format JJ-MM-AAAA (jour-mois-année).</li>
-            </ul>
-        </div>
+
         
         
         
+    </div>
+
+    <div class="instructions" style="background: linear-gradient(to bottom, #0079C0, #93BE1E); color: #F9FCFF; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 600px; text-align: left;">
+        <h3 style="margin-bottom: 10px;">Comment importer un fichier :</h3>
+        <ul style="list-style-type: disc; padding-left: 20px;">
+            <li>Choisissez un fichier au format Excel ou CSV à importer.</li>
+            <li>Vérifiez que le fichier contient au moins les informations suivantes : nom, prénom et date de naissance du patient.</li>
+            <li>Assurez-vous que la date de naissance est au format JJ-MM-AAAA (jour-mois-année).</li>
+        </ul>
     </div>
 
     <!-- Button to return to the homepage -->
     <a href="{% url 'home' %}" class="button">Retour à l'accueil</a>
 </body>
 </html>
+
+
+
+

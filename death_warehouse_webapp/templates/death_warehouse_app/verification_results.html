@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,16 +19,19 @@
             padding: 0;
             background-color: #F2F2F2;
         }
+
         .banner {
             background: linear-gradient(to bottom, #00487E, #0079C0);
             color: #F7F7F7;
             padding: 20px 0;
         }
+
         .banner h1 {
             margin: 0;
             padding: 0;
             font-size: 24px;
         }
+
         .container {
             background-color: #FFFFFF;
             border-radius: 8px;
@@ -36,27 +40,34 @@
             margin: 20px auto;
             padding: 20px;
         }
+
         h2 {
             color: #00487E;
             font-size: 18px;
         }
+
         table {
             border-collapse: collapse;
             width: 100%;
             margin-top: 20px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 10px;
             text-align: center;
         }
+
         th {
             background-color: #00487E;
             color: #F7F7F7;
         }
+
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
+
         .button {
             background-color: #00487E;
             color: #F7F7F7;
@@ -68,7 +79,12 @@
             margin: 10px;
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    
 </head>
+
 <body>
     <div class="banner">
         <h1>Résultats</h1>
@@ -80,7 +96,7 @@
     <a href="{% url 'home' %}" class="button">Retour à l'accueil</a>
     <div class="container">
         <h2>Résultats de vérification des patients</h2>
-        <table>
+        <table class="datatable">
             <thead>
                 <tr>
                     <th>Patient Existant</th>
@@ -92,16 +108,21 @@
             </thead>
             <tbody>
                 {% for result in results %}
-                    <tr>
-                        <td>{{ result.patient_exists }}</td>
-                        <td>{{ result.patient_details.nom }}</td>
-                        <td>{{ result.patient_details.prenom }}</td>
-                        <td>{{ result.patient_details.date_naiss }}</td>
-                        <td>{{ result.patient_details.date_deces }}</td>
-                    </tr>
+                <tr>
+                    <td>{{ result.patient_exists }}</td>
+                    <td>{{ result.patient_details.nom }}</td>
+                    <td>{{ result.patient_details.prenom }}</td>
+                    <td>{{ result.patient_details.date_naiss }}</td>
+                    <td>{{ result.patient_details.date_deces }}</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <script>
+        $(document).ready(function() {
+            $('.datatable').DataTable();
+        });
+    </script>
 </body>
-</html>
