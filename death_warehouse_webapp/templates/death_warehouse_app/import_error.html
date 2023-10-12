@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erreur d'importation</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+    <script type="text/javascript" src="{% static 'js/custom.js' %}"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gabarito:wght@700&display=swap">
+    <style>
+        body {
+            font-family: 'Gabarito', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #F7F7F7;
+        }
+        h2 {
+            color: #00487E;
+        }
+        .banner {
+            background-color: #00487E;
+            color: #F7F7F7;
+            padding: 10px;
+        }
+        .banner h1 {
+            margin: 0;
+            padding: 0;
+        }
+        p {
+            color: #00487E;
+        }
+        .back-link {
+            color: #00487E;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <h1>Erreur d'importation</h1>
+    </div>
+    <p>Le format du fichier n'est pas pris en charge. Veuillez télécharger un fichier CSV ou Excel.</p>
+
+    <!-- Ajouter un lien vers la page d'accueil -->
+    <a class="back-link" href="{% url 'home' %}">Retour à l'accueil</a>
+</body>
+</html>

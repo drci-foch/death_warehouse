@@ -19,14 +19,8 @@ def import_data_from_csv(file_path):
             # Vérifiez chaque champ et définissez des valeurs par défaut si elles sont manquantes
             nom = row.get('Nom', 'Nom manquant')
             prenom = row.get('Prenom', 'Prénom Manquant')
-            
             date_naiss = row.get('Date de naissance', None)
-            if date_naiss:
-                try:
-                    date_naiss = datetime.strptime(date_naiss, '%Y-%m-%d')
-                except ValueError:
-                    date_naiss = None 
-            
+        
             pays_naiss = row.get('Pays de naissance', 'Pays de naissance manquant')
             lieu_naiss = row.get('Lieu de naissance', 'Lieu de naissance manquant')
             code_naiss = row.get('Code lieu de naissance', '00000')
@@ -52,6 +46,6 @@ def import_data_from_csv(file_path):
 
             )
 
-date_du_jour = datetime.now().strftime("%Y%m%d")
+date_du_jour = datetime.now().strftime("%d%m%Y")
 
 import_data_from_csv(os.path.abspath(f"../deces_insee/deces_global_maj_{date_du_jour}.csv"))

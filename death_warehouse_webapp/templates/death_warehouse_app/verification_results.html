@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résultats de vérification</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+    <script type="text/javascript" src="{% static 'js/custom.js' %}"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gabarito:wght@700&display=swap">
+    <style>
+        body {
+            font-family: 'Gabarito', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #F7F7F7;
+        }
+        h2 {
+            color: #00487E;
+        }
+        .banner {
+            background-color: #00487E;
+            color: #F7F7F7;
+            padding: 10px;
+        }
+        .banner h1 {
+            margin: 0;
+            padding: 0;
+        }
+        .input-group {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #00487E;
+            color: #F7F7F7;
+            text-decoration: none;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #00487E;
+            color: #F7F7F7;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <h1>Résultats de vérification</h1>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Patient Existant</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Date de Naissance</th>
+                <th>Date de Décès</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+                <tr>
+                    <td>{{ result.patient_exists }}</td>
+                    {% if result.patient_exists %}
+                        <td>{{ result.patient_details.nom }}</td>
+                        <td>{{ result.patient_details.prenom }}</td>
+                        <td>{{ result.patient_details.date_naiss }}</td>
+                        <td>{{ result.patient_details.date_deces }}</td>
+                    {% else %}
+                        <td>{{ result.patient_details.nom }}</td>
+                        <td>{{ result.patient_details.prenom }}</td>
+                        <td>{{ result.patient_details.date_naiss }}</td>
+                        <td>{{ result.patient_details.date_deces }}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Bouton pour exporter en CSV -->
+    <a href="{% url 'export_results_csv' %}" class="button">Exporter en CSV</a>
+    <!-- Bouton pour revenir à la page d'accueil -->
+    <a href="{% url 'home' %}" class="button">Retour à l'accueil</a>
+</body>
+</html>

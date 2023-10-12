@@ -36,6 +36,14 @@
             display: inline-block;
             margin-right: 10px;
         }
+        .button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #00487E;
+            color: #F7F7F7;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -45,6 +53,7 @@
     <i class="fi fi-tr-circle-book-open"></i>
     <h2>Moteur de Recherche</h2> 
     <h2>Décès enregistrés sur le fichier des personnes décédées de l'INSEE</h2>
+    
     <form method="post" action="{% url 'home' %}">
         {% csrf_token %}
         <div class="input-group">
@@ -62,9 +71,9 @@
             {{ form.date_naiss }}
         </div>
 
-
         <button type="submit">Rechercher</button>
     </form>
+    
     {% if patients %}
         <h2>Résultats de la recherche :</h2>
             {% for patient in patients %}
@@ -72,7 +81,13 @@
                 Date de naissance : {{ patient.date_naiss }} <br>
                 Date de décès : {{ patient.date_deces }}
             {% endfor %}
-       
+    {% else %}
+        <h2>Résultats de la recherche :</h2>
+        <p>Aucun patient correspondant dans la base</p>
     {% endif %}
+
+        <br> <br> <br>
+        <!-- Bouton pour la page de téléchargement -->
+        <a href="{% url 'import_file' %}" class="button">Télécharger un fichier</a>
 </body>
 </html>

@@ -6,3 +6,5 @@ class RecherchePatientForm(forms.Form):
     prenom = forms.CharField(required=False, label="Prénom")
     date_naiss = forms.DateField(required=True, label="Date de naissance (AAAA-MM-JJ)")
 
+class ImportFileForm(forms.Form):
+    file = forms.FileField(label='Sélectionnez un fichier')

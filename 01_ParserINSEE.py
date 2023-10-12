@@ -61,7 +61,7 @@ for fichier in os.listdir(dossier):
                     informations = extraire_informations(ligne)
                     donnees_globales.append(informations)
 
-date_du_jour = datetime.now().strftime("%Y%m%d")
+date_du_jour = datetime.now().strftime("%d%m%Y")
 fichier_csv = f".//deces_insee/deces_global_maj_{date_du_jour}.csv"
 
 with open(fichier_csv, 'w', newline='', encoding='utf-8') as csvfile:

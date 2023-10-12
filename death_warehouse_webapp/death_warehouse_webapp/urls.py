@@ -16,12 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from death_warehouse_app.views import RecherchePatientListView, home, recherche
+from death_warehouse_app.views import home, import_file, export_results_csv
 
 urlpatterns = [
     path('', home, name='home'),
-    path('patients/', RecherchePatientListView.as_view(), name='patients'),
-    path('recherche/', recherche, name='recherche'),
+    path('import/', import_file, name='import_file'),
+    path('export_results_csv/', export_results_csv, name='export_results_csv')
 ]
 
 
