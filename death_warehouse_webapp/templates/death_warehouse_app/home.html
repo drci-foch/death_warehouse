@@ -32,6 +32,10 @@
             margin: 0;
             padding: 0;
         }
+        .input-group {
+            display: inline-block;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -43,20 +47,32 @@
     <h2>Décès enregistrés sur le fichier des personnes décédées de l'INSEE</h2>
     <form method="post" action="{% url 'home' %}">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="input-group">
+            <label for="{{ form.nom.id_for_label }}">Nom :</label>
+            {{ form.nom }}
+        </div>
+
+        <div class="input-group">
+            <label for="{{ form.prenom.id_for_label }}">Prénom :</label>
+            {{ form.prenom }}
+        </div>
+
+        <div class="input-group">
+            <label for="{{ form.date_naiss.id_for_label }}">Date de naissance :</label>
+            {{ form.date_naiss }}
+        </div>
+
+
         <button type="submit">Rechercher</button>
-      </form>
-      {% if patients %}
+    </form>
+    {% if patients %}
         <h2>Résultats de la recherche :</h2>
-        <ul>
-          {% for patient in patients %}
-            <li>{{ patient.nom }} {{ patient.prenom }}</li>
-            </li>Date de naissance : {{ patient.date_naiss }}</li> 
-            </li>Date de décès : {{ patient.date_deces }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-      
-    
+            {% for patient in patients %}
+                {{ patient.nom }} {{ patient.prenom }} <br>
+                Date de naissance : {{ patient.date_naiss }} <br>
+                Date de décès : {{ patient.date_deces }}
+            {% endfor %}
+       
+    {% endif %}
 </body>
 </html>

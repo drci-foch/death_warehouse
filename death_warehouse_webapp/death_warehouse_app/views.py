@@ -17,7 +17,7 @@ def home(request):
             # Ajoutez d'autres champs à rechercher en fonction de votre modèle
 
             # Effectuez la recherche dans la base de données
-            patients = RecherchePatient.objects.filter(nom=nom, prenom=prenom, date_naiss = date_naiss)
+            patients = RecherchePatient.objects.filter(nom=nom, prenom__icontains=prenom, date_naiss = date_naiss)
             # Vous pouvez ajouter d'autres critères de recherche ici
 
             if not patients:
@@ -49,7 +49,7 @@ def recherche(request):
             date_naiss = form.cleaned_data.get('date_naiss')
 
             # Effectuez la recherche dans la base de données
-            patients = RecherchePatient.objects.filter(nom=nom, prenom=prenom, date_naiss=date_naiss)
+            patients = RecherchePatient.objects.filter(nom=nom, prenom__icontains=prenom, date_naiss=date_naiss)
 
     else:
         form = RecherchePatientForm()

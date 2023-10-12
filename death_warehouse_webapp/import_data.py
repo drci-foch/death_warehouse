@@ -25,7 +25,7 @@ def import_data_from_csv(file_path):
                 try:
                     date_naiss = datetime.strptime(date_naiss, '%Y-%m-%d')
                 except ValueError:
-                    date_naiss = None  # Remplacez par `None` si le format est incorrect
+                    date_naiss = None 
             
             pays_naiss = row.get('Pays de naissance', 'Pays de naissance manquant')
             lieu_naiss = row.get('Lieu de naissance', 'Lieu de naissance manquant')
@@ -36,7 +36,9 @@ def import_data_from_csv(file_path):
                 try:
                     date_deces = datetime.strptime(date_deces, '%Y-%m-%d')
                 except ValueError:
-                    date_deces = '1970-01-01'  # Remplacez par `None` si le format est incorrect
+                    date_deces = None
+                    print(f"Date de décès non valide: {row.get('Date de deces')}")
+
             
 
             RecherchePatient.objects.create(
@@ -52,4 +54,4 @@ def import_data_from_csv(file_path):
 
 date_du_jour = datetime.now().strftime("%Y%m%d")
 
-import_data_from_csv(os.path.abspath(f"../deces_insee/global_death_final_{date_du_jour}.csv"))
+import_data_from_csv(os.path.abspath(f"../deces_insee/deces_global_maj_{date_du_jour}.csv"))
