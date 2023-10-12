@@ -18,7 +18,8 @@ def home(request):
             nom = form.cleaned_data.get('nom')
             prenom = form.cleaned_data.get('prenom')
             date_naiss = form.cleaned_data.get('date_naiss')
-            patients = RecherchePatient.objects.filter(nom__iexact=nom, prenom__icontains=prenom, date_naiss=date_naiss)
+            patients = RecherchePatient.objects.filter(
+                nom__iexact=nom, prenom__icontains=prenom, date_naiss=date_naiss)
         else:
             message = "Le formulaire n'est pas valide"
     else:
@@ -31,6 +32,7 @@ def home(request):
     }
 
     return render(request, 'death_warehouse_app/home.html', context)
+
 
 def import_file(request):
     if request.method == 'POST':
@@ -52,12 +54,14 @@ def import_file(request):
 
                 try:
                     # Essayer de convertir la date au format 'dd-mm-yyyy'
-                    date_naiss_iso = datetime.strptime(date_naiss, '%d-%m-%Y').strftime('%Y-%m-%d')
+                    date_naiss_iso = datetime.strptime(
+                        date_naiss, '%d-%m-%Y').strftime('%Y-%m-%d')
                 except ValueError:
                     # En cas d'erreur de format, définissez la date à une valeur par défaut ou à None
                     date_naiss_iso = None  # ou une autre valeur par défaut si nécessaire
 
-                patient = RecherchePatient.objects.filter(nom__iexact=row['Nom'], prenom__icontains=row['Prenom'], date_naiss=date_naiss_iso).first()
+                patient = RecherchePatient.objects.filter(
+                    nom__iexact=row['Nom'], prenom__icontains=row['Prenom'], date_naiss=date_naiss_iso).first()
 
                 if patient is not None:
                     verification_result = {
@@ -82,7 +86,6 @@ def import_file(request):
 
                 verification_results.append(verification_result)
 
-
             request.session['verification_results'] = verification_results
 
             return render(request, 'death_warehouse_app/verification_results.html', {'results': verification_results})
@@ -91,8 +94,6 @@ def import_file(request):
 
     return render(request, 'death_warehouse_app/import_file.html', {'form': form})
 
-import csv
-from django.http import HttpResponse
 
 def export_results_csv(request):
     verification_results = request.session.get('verification_results')
@@ -102,7 +103,8 @@ def export_results_csv(request):
         response['Content-Disposition'] = 'attachment; filename="recherche_fichiers_deces.csv"'
 
         writer = csv.writer(response)
-        writer.writerow(['patient_exists', 'nom', 'prenom', 'date_naiss', 'date_deces'])
+        writer.writerow(['patient_exists', 'nom', 'prenom',
+                        'date_naiss', 'date_deces'])
         for result in verification_results:
             writer.writerow([
                 result['patient_exists'],
@@ -126,7 +128,8 @@ def export_results_xlsx(request):
 
         workbook = openpyxl.Workbook()
         worksheet = workbook.active
-        worksheet.append(['patient_exists', 'nom', 'prenom', 'date_naiss', 'date_deces'])
+        worksheet.append(['patient_exists', 'nom', 'prenom',
+                         'date_naiss', 'date_deces'])
 
         for result in verification_results:
             worksheet.append([

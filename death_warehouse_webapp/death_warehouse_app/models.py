@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class RecherchePatient(models.Model):
     nom = models.TextField(max_length=100)
     prenom = models.TextField(max_length=100)

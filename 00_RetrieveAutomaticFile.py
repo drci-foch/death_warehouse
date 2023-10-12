@@ -15,6 +15,7 @@ dossier_local = ".//deces_insee/"
 if not os.path.exists(dossier_local):
     os.makedirs(dossier_local)
 
+
 def telecharger_fichier(url, dossier_local):
     nom_fichier = os.path.basename(url)
     chemin_local = os.path.join(dossier_local, nom_fichier)
@@ -22,6 +23,7 @@ def telecharger_fichier(url, dossier_local):
         response = requests.get(url, stream=True)
         for morceau in response.iter_content(1024):
             fichier_local.write(morceau)
+
 
 def extraire_liens_fichiers(url):
     response = requests.get(url)
@@ -31,6 +33,7 @@ def extraire_liens_fichiers(url):
         lien_absolu = urljoin(site_url, lien['href'])
         liens.append(lien_absolu)
     return liens
+
 
 liens_fichiers = extraire_liens_fichiers(site_url)
 for lien in liens_fichiers:

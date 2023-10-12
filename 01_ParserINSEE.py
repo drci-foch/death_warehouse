@@ -7,10 +7,12 @@ dossier = ".//deces_insee/"
 donnees_globales = []
 
 # Fonction pour extraire les informations d'une ligne
+
+
 def extraire_informations(ligne):
     nom = ligne[0:79].strip().split('*')[0]
     prenom = ligne[0:79].strip().split('*')[-1].replace(characters, "")
-    date_naissance = ligne[81:89].strip() 
+    date_naissance = ligne[81:89].strip()
     code_lieu_naissance = ligne[89:94].strip() or '00000'
     lieu_naissance = ligne[94:123].strip() or 'Pas enregistré'
     pays_naissance = ligne[124:153].strip() or 'Pas enregistré'
@@ -41,21 +43,22 @@ def extraire_informations(ligne):
         'Nom': nom,
         'Prenom': prenom,
         'Date de naissance': date_naissance_formatee,
-        'Pays de naissance' : pays_naissance,
+        'Pays de naissance': pays_naissance,
         'Lieu de naissance': lieu_naissance,
         'Code lieu de naissance': code_lieu_naissance,
         'Date de deces': date_deces_formatee,
         'Code du lieu de deces': code_deces
     }
 
+
 # Parcourir les fichiers dans le dossier
 for fichier in os.listdir(dossier):
-    if fichier.endswith(".txt"): 
+    if fichier.endswith(".txt"):
         chemin_fichier = os.path.join(dossier, fichier)
-        
+
         with open(chemin_fichier, 'r', encoding='latin-1') as f:
             lignes = f.readlines()
-            
+
             for ligne in lignes:
                 if len(ligne) >= 176:  # Vérifier que la ligne a la longueur attendue
                     informations = extraire_informations(ligne)

@@ -24,5 +24,3 @@ urlpatterns = [
     path('export_results_csv/', export_results_csv, name='export_results_csv'),
     path('export_results_xlsx/', export_results_xlsx, name='export_results_xlsx')
 ]
-
-
