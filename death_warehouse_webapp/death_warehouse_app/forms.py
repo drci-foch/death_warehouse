@@ -1,13 +1,16 @@
 from django import forms
-from .models import RecherchePatient
+
+class DateInput(forms.DateInput):
+    input_type = 'date'
 
 class RecherchePatientForm(forms.Form):
     nom = forms.CharField(required=True, label="Nom")
     prenom = forms.CharField(required=False, label="Prénom")
-    date_naiss = forms.DateField(required=True, label="Date de naissance (AAAA-MM-JJ)")
-
-# forms.py
-from django import forms
+    date_naiss = forms.DateField(
+        required=True, 
+        label="Date de naissance",
+        widget=DateInput(attrs={'type': 'date'})  # Specify the attribute directly just to be sure
+    )
 
 class ImportFileForm(forms.Form):
     file = forms.FileField(label='Sélectionnez un fichier')
