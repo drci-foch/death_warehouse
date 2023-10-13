@@ -5,7 +5,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Résultats de vérification</title>
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
     <script type="text/javascript" src="{% static 'js/custom.js' %}"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -88,7 +87,7 @@
 
 <body>
     <div class="banner">
-        <h1>Résultats</h1>
+        <img src="https://upload.wikimedia.org/wikipedia/fr/d/d4/Logo_HOPITAL_FOCH.png" alt="Image d'accueil" width="250" >
     </div>
     <div style="margin-bottom: 20px;"></div>
 
@@ -117,43 +116,45 @@
                     <td>{{ result.patient_details.prenom }}</td>
                     <td class="date-naiss">{{ result.patient_details.date_naiss }}</td>
                     <td class="date-deces">{{ result.patient_details.date_deces }}</td>
-                    
-                    
-                    
+
+
+
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-          const dateNaissElements = document.querySelectorAll(".date-naiss");
-          const dateDecesElements = document.querySelectorAll(".date-deces");
-      
-          dateNaissElements.forEach(function(element) {
-            const date = element.textContent;
-            if (date) {
-              element.textContent = formatDate(date);
+        document.addEventListener("DOMContentLoaded", function () {
+            const dateNaissElements = document.querySelectorAll(".date-naiss");
+            const dateDecesElements = document.querySelectorAll(".date-deces");
+
+            dateNaissElements.forEach(function (element) {
+                const date = element.textContent;
+                if (date) {
+                    element.textContent = formatDate(date);
+                }
+            });
+
+            dateDecesElements.forEach(function (element) {
+                const date = element.textContent;
+                if (date) {
+                    element.textContent = formatDate(date);
+                }
+            });
+
+            function formatDate(dateString) {
+                const options = { year: "numeric", month: "2-digit", day: "2-digit" };
+                return new Date(dateString).toLocaleDateString(undefined, options);
             }
-          });
-      
-          dateDecesElements.forEach(function(element) {
-            const date = element.textContent;
-            if (date) {
-              element.textContent = formatDate(date);
-            }
-          });
-      
-          function formatDate(dateString) {
-            const options = { year: "numeric", month: "2-digit", day: "2-digit" };
-            return new Date(dateString).toLocaleDateString(undefined, options);
-          }
         });
-      </script>
-      
+    </script>
+
     <script>
-        $(document).ready(function () {
-            $('.datatable').DataTable();
+        $('.datatable').DataTable({
+            pageLength: 100,
+            order: [[0, 'desc']]
         });
+
     </script>
 </body>

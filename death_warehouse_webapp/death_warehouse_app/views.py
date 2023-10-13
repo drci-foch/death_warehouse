@@ -7,6 +7,7 @@ from django.http import HttpResponse
 import csv
 import openpyxl
 
+
 def home(request):
     patients = None
     message = ""
@@ -19,7 +20,8 @@ def home(request):
             date_naiss = form.cleaned_data.get('date_naiss')
 
             # Convert the date to the desired format, i.e., '%Y/%m/%d'
-            date_naiss_iso = date_naiss.strftime('%Y/%m/%d') if date_naiss else ""
+            date_naiss_iso = date_naiss.strftime(
+                '%Y/%m/%d') if date_naiss else ""
 
             patients = RecherchePatient.objects.filter(
                 nom__iexact=nom, prenom__icontains=prenom, date_naiss=date_naiss_iso)
@@ -40,6 +42,7 @@ def home(request):
 
     return render(request, 'death_warehouse_app/home.html', context)
 
+
 def try_parse_date(date_str, formats):
     for date_format in formats:
         try:
@@ -57,7 +60,6 @@ def import_data_from_file(file):
     else:
         raise ValueError("Unsupported file format")
     return df
-
 
 
 def get_verification_results(df):
@@ -132,6 +134,8 @@ def format_date(date_str):
         return date_obj.strftime('%d/%m/%Y')
     except ValueError:
         return date_str
+
+
 def export_results_csv(request):
     verification_results = request.session.get('verification_results')
 
@@ -140,12 +144,15 @@ def export_results_csv(request):
         response['Content-Disposition'] = 'attachment; filename="recherche_fichiers_deces.csv"'
 
         writer = csv.writer(response)
-        writer.writerow(['patient_exists', 'nom', 'prenom', 'date_naiss', 'date_deces'])
-        
+        writer.writerow(['patient_exists', 'nom', 'prenom',
+                        'date_naiss', 'date_deces'])
+
         for result in verification_results:
-            formatted_date_naiss = format_date(result['patient_details']['date_naiss'])
-            formatted_date_deces = format_date(result['patient_details']['date_deces'])
-            
+            formatted_date_naiss = format_date(
+                result['patient_details']['date_naiss'])
+            formatted_date_deces = format_date(
+                result['patient_details']['date_deces'])
+
             writer.writerow([
                 result['patient_exists'],
                 result['patient_details']['nom'],
@@ -168,12 +175,15 @@ def export_results_xlsx(request):
 
         workbook = openpyxl.Workbook()
         worksheet = workbook.active
-        worksheet.append(['patient_exists', 'nom', 'prenom', 'date_naiss', 'date_deces'])
+        worksheet.append(['patient_exists', 'nom', 'prenom',
+                         'date_naiss', 'date_deces'])
 
         for result in verification_results:
-            formatted_date_naiss = format_date(result['patient_details']['date_naiss'])
-            formatted_date_deces = format_date(result['patient_details']['date_deces'])
-            
+            formatted_date_naiss = format_date(
+                result['patient_details']['date_naiss'])
+            formatted_date_deces = format_date(
+                result['patient_details']['date_deces'])
+
             worksheet.append([
                 result['patient_exists'],
                 result['patient_details']['nom'],
