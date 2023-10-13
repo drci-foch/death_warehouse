@@ -3,6 +3,7 @@ from django.core import exceptions
 from dateutil.parser import parse as parse_date
 from datetime import datetime
 
+
 class CustomDateField(models.DateField):
     def to_python(self, value):
         if value is None:
@@ -41,4 +42,5 @@ class RecherchePatient(models.Model):
     pays_naiss = models.CharField(max_length=100, blank=True)
     lieu_naiss = models.CharField(max_length=100, blank=True)
     code_naiss = models.CharField(max_length=10, blank=True)
-    date_deces = CustomDateField(validators=[], blank=True, null=True, default="1970-01-01")
+    date_deces = CustomDateField(
+        validators=[], blank=True, null=True, default="1970-01-01")

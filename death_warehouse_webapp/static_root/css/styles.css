@@ -1,5 +1,6 @@
-
-input, textarea, select {
+input,
+textarea,
+select {
     padding: 10px;
     margin: 5px;
     border: 1px solid #ccc;
@@ -33,7 +34,8 @@ ul {
     margin: 20px;
     max-width: 600px;
     margin: 0 auto;
-    text-align: left; /* Aligner le texte à gauche */
+    text-align: left;
+    /* Aligner le texte à gauche */
 }
 
 .input-group label {
@@ -41,16 +43,19 @@ ul {
     text-align: left;
     margin-bottom: 5px;
 }
+
 .input-group input {
     width: 100%;
     padding: 10px;
     border: 1px solid #DDD;
     border-radius: 4px;
     box-sizing: border-box;
-    max-width: 100%; /* Ajoutez cette ligne pour limiter la largeur */
+    max-width: 100%;
+    /* Ajoutez cette ligne pour limiter la largeur */
 }
+
 /* Style pour le message "Aucun patient correspondant" */
 .no-patient-message {
-        color: #CC0D20;
-        font-weight: bold;
-    }
+    color: #CC0D20;
+    font-weight: bold;
+}

@@ -6,8 +6,6 @@ characters = "/"
 dossier = ".//deces_insee/"
 donnees_globales = []
 
-# Fonction pour extraire les informations d'une ligne
-
 
 def extraire_informations(ligne):
     nom = ligne[0:79].strip().split('*')[0]

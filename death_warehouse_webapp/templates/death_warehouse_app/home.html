@@ -103,9 +103,11 @@
         }
     </style>
 </head>
+
 <body>
     <div class="banner">
-        <img src="https://upload.wikimedia.org/wikipedia/fr/d/d4/Logo_HOPITAL_FOCH.png" alt="Image d'accueil" width="250" >
+        <img src="https://upload.wikimedia.org/wikipedia/fr/d/d4/Logo_HOPITAL_FOCH.png" alt="Image d'accueil"
+            width="250">
     </div>
     <div class="search-container">
         <h2>Enregistrement des personnes décédées : INSEE et Hôpital Foch</h2>
@@ -122,7 +124,7 @@
                     value="{{ form.prenom.value|default:'' }}">
             </div>
             <div class="input-group">
-                <label for="{{ form.date_naiss.id_for_label }}">Date de naissance  :</label>
+                <label for="{{ form.date_naiss.id_for_label }}">Date de naissance :</label>
                 {{ form.date_naiss }}
             </div>
 
@@ -139,16 +141,16 @@
         </script>
 
         {% if not first_load %}
-            {% if patients %}
-            <h2>Résultats de la recherche :</h2>
-            {% for patient in patients %}
-            {{ patient.nom }} {{ patient.prenom }} <br>
-            Date de décès : {{ patient.date_deces }}
-            {% endfor %}
-            {% else %}
-            <!-- Message "Aucun patient correspondant" -->
-            <p class="no-patient-message" id="no-patient-message">Aucun patient correspondant dans la base</p>
-            {% endif %}
+        {% if patients %}
+        <h2>Résultats de la recherche :</h2>
+        {% for patient in patients %}
+        {{ patient.nom }} {{ patient.prenom }} <br>
+        Date de décès : {{ patient.date_deces }}
+        {% endfor %}
+        {% else %}
+        <!-- Message "Aucun patient correspondant" -->
+        <p class="no-patient-message" id="no-patient-message">Aucun patient correspondant dans la base</p>
+        {% endif %}
         {% endif %}
     </div>
 
@@ -165,19 +167,20 @@
         <div class="info-block">
             <h3>Comment faire une recherche?</h3>
             <ul>
-                <li>Entrez le nom de naissance ainsi que la date de naissance du patient pour effectuer la recherche.</li>
+                <li>Entrez le nom de naissance ainsi que la date de naissance du patient pour effectuer la recherche.
+                </li>
                 <li>Vous pouvez également ajouter le prénom pour affiner les résultats.</li>
                 <li>Pour faire une recherche à partir d'un fichier Excel/CSV, cliquez sur "Importer un fichier".</li>
             </ul>
         </div>
     </div>
-    
+
     <!-- Ajout d'une nouvelle bannière en bas -->
     <div class="bottom-banner" style="background-color: #C9C9C9; color: #FFFFFF; padding: 15px; text-align: center;">
         <h2>Version 1.0</h2>
         <p>Ajouter un pdf d'explication</p>
     </div>
-    
+
     <!-- Ajout d'une nouvelle bannière en bas -->
 
 </body>

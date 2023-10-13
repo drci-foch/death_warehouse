@@ -6,6 +6,7 @@ import pandas as pd
 from django.http import HttpResponse
 import csv
 import openpyxl
+from django.db.models import Q
 
 
 def home(request):
@@ -80,26 +81,32 @@ def get_verification_results(df):
             # Try to parse the date_naiss string in various formats
             date_naiss_iso = try_parse_date(date_naiss, date_formats)
 
-        patient = RecherchePatient.objects.filter(
-            nom__iexact=row['Nom'], prenom__icontains=row['Prenom'], date_naiss=date_naiss_iso).first()
+        # Effectuer une recherche en utilisant le nom, le prénom et la date de naissance
+        patients = RecherchePatient.objects.filter(
+            Q(nom__iexact=row['Nom']) &
+            (Q(prenom__icontains=row['Prenom']) | Q(date_naiss=date_naiss_iso))
+        )
 
-        if patient is not None:
+        if patients.exists():
+            # Si des patients sont trouvés, récupérez le premier résultat
+            patient = patients.first()
             verification_result = {
                 'patient_exists': "Trouvé",
                 'patient_details': {
                     'nom': patient.nom,
                     'prenom': patient.prenom,
-                    'date_naiss': date_naiss_iso if date_naiss_iso else "Invalid/Empty Date",
+                    'date_naiss': date_naiss_iso if date_naiss_iso else "Date invalide/vide",
                     'date_deces': patient.date_deces.strftime('%Y/%m/%d') if patient.date_deces else ""
                 }
             }
         else:
+            # Si aucun patient n'est trouvé, utilisez les informations d'origine
             verification_result = {
                 'patient_exists': "Non trouvé",
                 'patient_details': {
                     'nom': row['Nom'],
                     'prenom': row['Prenom'],
-                    'date_naiss': date_naiss_iso if date_naiss_iso else "Invalid/Empty Date",
+                    'date_naiss': date_naiss_iso if date_naiss_iso else "Date invalide/vide",
                     'date_deces': ""
                 }
             }
