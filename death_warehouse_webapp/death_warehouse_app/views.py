@@ -53,10 +53,11 @@ def import_data_from_file(file):
     if file.name.endswith('.csv'):
         df = pd.read_csv(file)
     elif file.name.endswith(('.xls', '.xlsx')):
-        df = pd.read_excel(file)
+        df = pd.read_excel(file, engine='openpyxl')
     else:
         raise ValueError("Unsupported file format")
     return df
+
 
 
 def get_verification_results(df):
