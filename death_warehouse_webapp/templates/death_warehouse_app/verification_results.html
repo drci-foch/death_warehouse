@@ -115,14 +115,42 @@
                     <td>{{ result.patient_exists }}</td>
                     <td>{{ result.patient_details.nom }}</td>
                     <td>{{ result.patient_details.prenom }}</td>
-                    <td>{{ result.patient_details.date_naiss }}</td>
-                    <td>{{ result.patient_details.date_deces }}</td>
+                    <td class="date-naiss">{{ result.patient_details.date_naiss }}</td>
+                    <td class="date-deces">{{ result.patient_details.date_deces }}</td>
+                    
+                    
+                    
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          const dateNaissElements = document.querySelectorAll(".date-naiss");
+          const dateDecesElements = document.querySelectorAll(".date-deces");
+      
+          dateNaissElements.forEach(function(element) {
+            const date = element.textContent;
+            if (date) {
+              element.textContent = formatDate(date);
+            }
+          });
+      
+          dateDecesElements.forEach(function(element) {
+            const date = element.textContent;
+            if (date) {
+              element.textContent = formatDate(date);
+            }
+          });
+      
+          function formatDate(dateString) {
+            const options = { year: "numeric", month: "2-digit", day: "2-digit" };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+          }
+        });
+      </script>
+      
     <script>
         $(document).ready(function () {
             $('.datatable').DataTable();

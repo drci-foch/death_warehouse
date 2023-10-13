@@ -146,7 +146,6 @@
         <h2>Résultats de la recherche :</h2>
         {% for patient in patients %}
         {{ patient.nom }} {{ patient.prenom }} <br>
-        Date de naissance : {{ patient.date_naiss }} <br>
         Date de décès : {{ patient.date_deces }}
         {% endfor %}
         {% else %}

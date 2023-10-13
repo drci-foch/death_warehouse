@@ -18,8 +18,12 @@ def home(request):
             nom = form.cleaned_data.get('nom')
             prenom = form.cleaned_data.get('prenom')
             date_naiss = form.cleaned_data.get('date_naiss')
+
+            # Convertir la date au format 'YYYY/MM/DD'
+            date_naiss_iso = date_naiss.strftime('%Y/%m/%d') if date_naiss else ""
+
             patients = RecherchePatient.objects.filter(
-                nom__iexact=nom, prenom__icontains=prenom, date_naiss=date_naiss)
+                nom__iexact=nom, prenom__icontains=prenom, date_naiss=date_naiss_iso)
         else:
             message = "Le formulaire n'est pas valide"
     else:
@@ -32,6 +36,9 @@ def home(request):
     }
 
     return render(request, 'death_warehouse_app/home.html', context)
+
+
+
 
 
 def import_file(request):
@@ -53,9 +60,10 @@ def import_file(request):
                 date_naiss = row['Date de naissance']
 
                 try:
-                    # Essayer de convertir la date au format 'dd-mm-yyyy'
+                    # Essayer de convertir la date au format 'YYYY/MM/DD'
                     date_naiss_iso = datetime.strptime(
-                        date_naiss, '%d-%m-%Y').strftime('%Y-%m-%d')
+                        date_naiss, '%Y/%m/%d').strftime('%Y/%m/%d')
+                    
                 except ValueError:
                     # En cas d'erreur de format, définissez la date à une valeur par défaut ou à None
                     date_naiss_iso = None  # ou une autre valeur par défaut si nécessaire
@@ -69,8 +77,8 @@ def import_file(request):
                         'patient_details': {
                             'nom': patient.nom,
                             'prenom': patient.prenom,
-                            'date_naiss': patient.date_naiss.isoformat(),
-                            'date_deces': patient.date_deces.isoformat() if patient.date_deces else ""
+                            'date_naiss': date_naiss_iso if date_naiss_iso else "",
+                            'date_deces': patient.date_deces.strftime('%Y/%m/%d') if patient.date_deces else ""
                         }
                     }
                 else:
@@ -93,6 +101,7 @@ def import_file(request):
         form = ImportFileForm()
 
     return render(request, 'death_warehouse_app/import_file.html', {'form': form})
+
 
 
 def export_results_csv(request):

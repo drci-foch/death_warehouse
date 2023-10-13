@@ -1,23 +1,21 @@
-from death_warehouse_app.models import RecherchePatient
-import csv
 import os
-import sys
 import django
+from django.core.management import call_command
+import csv
 from datetime import datetime
 
-# Remplacez 'nom_de_votre_projet.settings' par le nom de votre projet Django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE",
-                      "death_warehouse_webapp.settings")
 
-# Initialisez Django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "death_warehouse_webapp.settings")
+
 django.setup()
 
+from death_warehouse_app.models import RecherchePatient
 
 def import_data_from_csv(file_path):
     with open(file_path, 'r') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            # Vérifiez chaque champ et définissez des valeurs par défaut si elles sont manquantes
             nom = row.get('Nom', 'Nom manquant')
             prenom = row.get('Prenom', 'Prénom Manquant')
             date_naiss = row.get('Date de naissance', None)
@@ -31,11 +29,10 @@ def import_data_from_csv(file_path):
 
             if date_deces:
                 try:
-                    date_deces = datetime.strptime(date_deces, '%Y-%m-%d')
+                    date_deces = datetime.strptime(date_deces, '%Y/%m/%d').date()
                 except ValueError:
                     date_deces = None
-                    print(
-                        f"Date de décès non valide: {row.get('Date de deces')}")
+                    print(f"Date de décès non valide: {row.get('Date de deces')}")
 
             RecherchePatient.objects.create(
                 nom=nom,
@@ -45,9 +42,7 @@ def import_data_from_csv(file_path):
                 lieu_naiss=lieu_naiss,
                 code_naiss=code_naiss,
                 date_deces=date_deces,
-
             )
-
 
 date_du_jour = datetime.now().strftime("%d%m%Y")
 

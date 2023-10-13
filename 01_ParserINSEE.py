@@ -27,7 +27,7 @@ def extraire_informations(ligne):
         year = date_naissance[:4]
         month = date_naissance[4:6] if date_naissance[4:6] != '00' else '01'
         day = date_naissance[6:8] if date_naissance[6:8] != '00' else '01'
-        date_naissance_formatee = f'{year}-{month}-{day}'
+        date_naissance_formatee = f'{year}/{month}/{day}'
 
     # Formater la date de décès
     if date_deces == '':
@@ -37,7 +37,7 @@ def extraire_informations(ligne):
         year = date_deces[:4]
         month = date_deces[4:6] if date_deces[4:6] != '00' else '01'
         day = date_deces[6:8] if date_deces[6:8] != '00' else '01'
-        date_deces_formatee = f'{year}-{month}-{day}'
+        date_deces_formatee = f'{year}/{month}{day}'
 
     return {
         'Nom': nom,
