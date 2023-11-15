@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-0sux*pn045va0x@tb9c96jee5f*@%xhbxhe^zpmmsolkscg6@3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'death_warehouse_app',
+
 ]
 
 MIDDLEWARE = [
@@ -78,9 +79,18 @@ WSGI_APPLICATION = 'death_warehouse_webapp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'NAME': 'mydatabase',
+    },
+    'my_oracle': {
+        'ENGINE': 'django.db.backends.oracle',
+        'NAME': 'dwh',  # Or your Oracle service name
+        'USER': 'drci002',
+        'PASSWORD': 'Gbu!459deux3',
+        'HOST': 'srvapp522',  # Usually the IP address or domain name
+        'PORT': '1521',  # Default Oracle port
+    },
 }
+
 
 
 # Password validation
