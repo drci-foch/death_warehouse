@@ -3,16 +3,23 @@ import django
 import csv
 from datetime import datetime
 from django.db import connections, DatabaseError
+from django.db import transaction
 import logging
 
 # Setup Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "death_warehouse_webapp.settings")
 django.setup()
 
-from death_warehouse_app.models import INSEEPatient, WarehousePatient  
+from death_warehouse_app.models import INSEEPatient, WarehousePatient  # Import your custom models
+
 # Import data from CSV file
 def import_data_from_csv(file_path):
-    with open(file_path, 'r', encoding='latin-1', errors='ignore') as csvfile:  # Adjust encoding if needed
+    # Clear existing data
+    INSEEPatient.objects.all().delete()
+
+    patients_to_create = []
+
+    with open(file_path, 'r', encoding='latin-1', errors='ignore') as csvfile:  # Try 'latin-1', 'ISO-8859-1', or 'Windows-1252'
         reader = csv.DictReader(csvfile)
 
         for row in reader:
@@ -24,31 +31,39 @@ def import_data_from_csv(file_path):
             code_naiss = row.get('Code lieu de naissance', '00000')
             date_deces = row.get('Date de deces', None)
 
+            # Convert date_naiss and date_deces to date objects (YYYY/MM/DD format)
             if date_naiss:
                 try:
                     date_naiss = datetime.strptime(date_naiss, '%Y/%m/%d').date()
                 except ValueError:
                     date_naiss = None
+                    print(f"Invalid date format for date of birth: {row.get('Date de naissance')}")
             
             if date_deces:
                 try:
                     date_deces = datetime.strptime(date_deces, '%Y/%m/%d').date()
                 except ValueError:
                     date_deces = None
+                    print(f"Invalid date format for death date: {row.get('Date de deces')}")
 
-            INSEEPatient.objects.update_or_create(
+            # Create INSEEPatient instance (not saved to database yet)
+            patients_to_create.append(INSEEPatient(
                 nom=nom,
                 prenom=prenom,
-                defaults={
-                    'date_naiss': date_naiss,
-                    'pays_naiss': pays_naiss,
-                    'lieu_naiss': lieu_naiss,
-                    'code_naiss': code_naiss,
-                    'date_deces': date_deces,
-                }
-            )
+                date_naiss=date_naiss,
+                pays_naiss=pays_naiss,
+                lieu_naiss=lieu_naiss,
+                code_naiss=code_naiss,
+                date_deces=date_deces,
+            ))
+
+    # Bulk create all instances
+    with transaction.atomic():
+        INSEEPatient.objects.bulk_create(patients_to_create)
+
 
 # Import data from SQL query
+
 def import_data_from_db():
     logger = logging.getLogger(__name__)
 
@@ -71,22 +86,29 @@ def import_data_from_db():
             """)
             data = cursor.fetchall()
 
-            for row in data:
-                WarehousePatient.objects.update_or_create(
-                    PATIENT_NUM=row[0],
-                    defaults={
-                        'LASTNAME': row[1],
-                        'FIRSTNAME': row[2],
-                        'BIRTH_DATE': row[3],
-                        'SEX': row[4],
-                        'MAIDEN_NAME': row[5],
-                        'DEATH_DATE': row[6],
-                        'BIRTH_COUNTRY': row[7],
-                        'HOSPITAL_PATIENT_ID': row[8],
-                    }
-                )
+            # Clear existing data
+            WarehousePatient.objects.all().delete()
 
-        logger.info("Data imported successfully.")
+            # Create a list of WarehousePatient objects
+            patients = [
+                WarehousePatient(
+                    PATIENT_NUM=row[0],
+                    LASTNAME=row[1],
+                    FIRSTNAME=row[2],
+                    BIRTH_DATE=row[3],
+                    SEX=row[4],
+                    MAIDEN_NAME=row[5],
+                    DEATH_DATE=row[6],
+                    BIRTH_COUNTRY=row[7],
+                    HOSPITAL_PATIENT_ID=row[8]
+                )
+                for row in data
+            ]
+
+            # Bulk insert the data into the database
+            WarehousePatient.objects.bulk_create(patients)
+
+            logger.info("Data imported successfully.")
     except DatabaseError as e:
         logger.error(f"Database error occurred: {e}")
 
