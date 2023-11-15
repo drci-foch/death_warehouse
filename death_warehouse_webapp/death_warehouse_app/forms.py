@@ -5,7 +5,7 @@ class DateInput(forms.DateInput):
     input_type = 'date'
 
 
-class RecherchePatientForm(forms.Form):
+class INSEEPatientForm(forms.Form):
     nom = forms.CharField(required=True, label="Nom")
     prenom = forms.CharField(required=False, label="Prénom")
     date_naiss = forms.DateField(
