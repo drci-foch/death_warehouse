@@ -120,7 +120,7 @@ def parse_date(date_value, date_formats):
 
 def patient_data_view(request):
     page = request.GET.get('page', 1)
-    page_size = 25  # Or any number you prefer
+    page_size = 100  # Or any number you prefer
     data = fetch_merged_data(page=page, page_size=page_size)
 
     return render(request, 'test.html', {'data': data, 'page': page})
@@ -130,7 +130,7 @@ def patient_data_view(request):
 # Improved database query
 def search_inseepatient(nom, prenom, date_naiss_iso):
     return INSEEPatient.objects.filter(
-        Q(nom__iexact=nom) & (Q(prenom__icontains=prenom) | Q(date_naiss=date_naiss_iso))
+        Q(nom__iexact=nom) & (Q(prenom__icontains=prenom) & Q(date_naiss=date_naiss_iso))
     ).first()
 
 def search_warehousepatient(nom, prenom, date_naiss_iso):
@@ -169,18 +169,12 @@ def create_verification_result(patient, date_naiss_iso, found, ipp=None, source=
         }
 
     return {
-        'patient_exists': f"Trouvé dans {source}" if found else "Non trouvé",
+        'patient_exists': f"{source}" if found else "Non trouvé",
         'patient_details': patient_details
     }
 
 # Function with caching
-def search_patient_with_cache(nom, prenom, date_naiss_iso):
-    cache_key = f"{nom}_{prenom}_{date_naiss_iso}"
-    cached_patient = cache.get(cache_key)
-
-    if cached_patient is not None:
-        return cached_patient
-
+def search_patient(nom, prenom, date_naiss_iso):
     # First try to find the patient in the WarehousePatient model
     patient = search_warehousepatient(nom, prenom, date_naiss_iso)
 
@@ -188,7 +182,6 @@ def search_patient_with_cache(nom, prenom, date_naiss_iso):
     if not patient:
         patient = search_inseepatient(nom, prenom, date_naiss_iso)
 
-    cache.set(cache_key, patient, timeout=3600)  # Cache for 1 hour
     return patient
 
 
@@ -209,7 +202,7 @@ def get_verification_results(df):
             nom = row['Nom']
             prenom = row.get('Prénom', '')
   
-            patient = search_patient_with_cache(nom, prenom, date_naiss_iso)
+            patient = search_patient(nom, prenom, date_naiss_iso)
             if patient:
                 verification_result = create_verification_result(patient, date_naiss_iso, True, ipp=ipp)
             else:
@@ -256,9 +249,10 @@ def export_results_csv(request):
     if verification_results is not None:
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="recherche_fichiers_deces.csv"'
+        response.write(u'\ufeff'.encode('utf8'))  # BOM (optional; for Excel compatibility)
 
         writer = csv.writer(response)
-        writer.writerow(['Provenance', 'Nom', 'Prénom', 'Date de naissance', 'Date de décès'])
+        writer.writerow(['Source', 'IPP', 'Nom', 'Prénom', 'Date de naissance', 'Date de décès'])
 
         for result in verification_results:
             formatted_date_naiss = format_date(result['patient_details']['date_naiss'])
@@ -266,6 +260,7 @@ def export_results_csv(request):
 
             writer.writerow([
                 result['patient_exists'],
+                result['patient_details']['ipp'],
                 result['patient_details']['nom'],
                 result['patient_details']['prenom'],
                 formatted_date_naiss,
@@ -286,22 +281,21 @@ def export_results_xlsx(request):
 
         workbook = openpyxl.Workbook()
         worksheet = workbook.active
-        worksheet.append(['Provenance', 'Nom', 'Prénom',
-                        'Date de naissance', 'Date de décès'])
+        worksheet.append(['Source', 'IPP', 'Nom', 'Prénom', 'Date de naissance', 'Date de décès'])
 
         for result in verification_results:
-            formatted_date_naiss = format_date(
-                result['patient_details']['date_naiss'])
-            formatted_date_deces = format_date(
-                result['patient_details']['date_deces'])
+            formatted_date_naiss = format_date(result['patient_details']['date_naiss'])
+            formatted_date_deces = format_date(result['patient_details']['date_deces'])
 
             worksheet.append([
                 result['patient_exists'],
+                result['patient_details']['ipp'],
                 result['patient_details']['nom'],
                 result['patient_details']['prenom'],
                 formatted_date_naiss,
                 formatted_date_deces
             ])
+
 
         workbook.save(response)
         return response

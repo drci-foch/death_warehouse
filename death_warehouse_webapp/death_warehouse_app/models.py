@@ -37,6 +37,7 @@ class CustomDateField(models.DateField):
 
 class INSEEPatient(models.Model):
     nom = models.TextField(max_length=100, db_index=True)
+    #indexer avec le bon index (type pour icontains)
     prenom = models.TextField(max_length=100)
     date_naiss = CustomDateField(db_index=True)
     pays_naiss = models.CharField(max_length=100, blank=True)
@@ -48,7 +49,8 @@ class INSEEPatient(models.Model):
 
 class WarehousePatient(models.Model):
     PATIENT_NUM = models.CharField(max_length=50, null=True)
-    LASTNAME = models.CharField(max_length=100, blank=True, null=True, db_index=True,)
+    LASTNAME = models.CharField(max_length=100, blank=True, null=True, db_index=True)
+        #indexer avec le bon index (type pour icontains)
     FIRSTNAME = models.CharField(max_length=100, blank=True, null=True)
     BIRTH_DATE = models.DateField(null=True, db_index=True)
     SEX = models.CharField(max_length=10, blank=True, null=True)
