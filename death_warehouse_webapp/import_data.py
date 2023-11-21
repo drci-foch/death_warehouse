@@ -55,19 +55,20 @@ def import_data_from_db():
     try:
         with connections['my_oracle'].cursor() as cursor:
             cursor.execute("""
-                SELECT
-                    p.PATIENT_NUM,
-                    p.LASTNAME,
-                    p.FIRSTNAME,
-                    p.BIRTH_DATE,
-                    p.SEX,
-                    p.MAIDEN_NAME,
-                    p.DEATH_DATE,
-                    p.BIRTH_COUNTRY,
-                    i.HOSPITAL_PATIENT_ID
-                FROM DWH.DWH_PATIENT p
-                JOIN DWH.DWH_PATIENT_IPPHIST i ON p.PATIENT_NUM = i.PATIENT_NUM
-                WHERE p.DEATH_DATE IS NOT NULL
+                    SELECT
+                        p.PATIENT_NUM,
+                        p.LASTNAME,
+                        p.FIRSTNAME,
+                        p.BIRTH_DATE,
+                        p.SEX,
+                        p.MAIDEN_NAME,
+                        p.DEATH_DATE,
+                        p.BIRTH_COUNTRY,
+                        MAX(i.HOSPITAL_PATIENT_ID) AS HOSPITAL_PATIENT_ID
+                    FROM DWH.DWH_PATIENT p
+                    JOIN DWH.DWH_PATIENT_IPPHIST i ON p.PATIENT_NUM = i.PATIENT_NUM
+                    WHERE p.DEATH_DATE IS NOT NULL
+                    GROUP BY p.PATIENT_NUM, p.LASTNAME, p.FIRSTNAME, p.BIRTH_DATE, p.SEX, p.MAIDEN_NAME, p.DEATH_DATE, p.BIRTH_COUNTRY
             """)
             data = cursor.fetchall()
 
