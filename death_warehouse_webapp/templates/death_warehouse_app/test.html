@@ -1,0 +1,15 @@
+<!-- Inside your Django template -->
+<table>
+    <tr>
+        <th>Patient Number</th>
+        <th>Last Name</th>
+        <!-- Add other headers as needed -->
+    </tr>
+    {% for row in data %}
+    <tr>
+        <td>{{ row.0 }}</td>
+        <td>{{ row.1 }}</td>
+        <!-- Add other data fields as needed -->
+    </tr>
+    {% endfor %}
+</table>

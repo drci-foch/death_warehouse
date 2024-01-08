@@ -77,11 +77,45 @@
             cursor: pointer;
             margin: 10px;
         }
+
+        .white-background {
+            background-color: #FFFFFF;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        .white-background ul {
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .bullet-list {
+            list-style-type: square;
+            /* Use disc for filled circles as bullet points */
+        }
+
+        .bullet-list li {
+            margin-bottom: 5px;
+        }
+
+        #summary {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <script type="text/javascript" charset="utf8"
         src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 </head>
 
@@ -95,14 +129,39 @@
     <!-- Boutons -->
     <a href="{% url 'export_results_csv' %}" class="button">Exporter en CSV</a>
     <a href="{% url 'export_results_xlsx' %}" class="button">Exporter en Excel</a>
-
+    <a href="{% url 'import_file' %}" class="button">Importer un autre fichier</a>
     <a href="{% url 'home' %}" class="button">Retour à l'accueil</a>
+
+    <div class="white-background">
+        <!-- Nouveau bloc blanc -->
+        <h2>Avertissement : </h2>
+        <ul class="bullet-list">
+            <li>Si un patient est référencé dans l'INSEE mais pas dans notre système, cela peut être dû à un délai de
+                mise à jour de nos fichiers. (ex. patient perdu de vue) </li>
+            <li>Notez qu'il peut y avoir un délai allant jusqu'à un mois pour la mise à jour des informations dans les
+                bases de données de l'INSEE. </li>
+            <li>La base de données de l'INSEE inclut également les informations sur les décès survenus à l'étranger.
+            </li>
+        </ul>
+
+
+    </div>
+
     <div class="container">
-        <h2>Résultats de vérification des patients</h2>
+        <h2>Résumé des résultats de recherche</h2>
+        <div id="summaryChartContainer">
+            <canvas id="summaryChart"></canvas>
+        </div>
+    </div>
+
+
+    <div class="container">
+        <h2>Résultats de recherche des patients</h2>
         <table class="datatable">
             <thead>
                 <tr>
                     <th>Patient Existant</th>
+                    <th>IPP</th>
                     <th>Nom</th>
                     <th>Prénom</th>
                     <th>Date de Naissance</th>
@@ -113,6 +172,7 @@
                 {% for result in results %}
                 <tr>
                     <td>{{ result.patient_exists }}</td>
+                    <td>{{ result.patient_details.ipp }}</td>
                     <td>{{ result.patient_details.nom }}</td>
                     <td>{{ result.patient_details.prenom }}</td>
                     <td class="date-naiss">{{ result.patient_details.date_naiss }}</td>
@@ -137,6 +197,67 @@
                 }
             });
 
+            function updateSummary() {
+                let inseeCount = 0;
+                let warehouseCount = 0;
+
+                // DataTable API instance
+                var table = $('.datatable').DataTable();
+
+                // Iterate over all pages
+                table.rows().every(function () {
+                    var row = this.data();
+                    var cellText = row[0]; // Assuming the first column holds 'INSEE' or 'Warehouse'
+
+                    if (cellText === 'INSEE') {
+                        inseeCount++;
+                    } else if (cellText === 'Warehouse') {
+                        warehouseCount++;
+                    }
+                });
+
+                // Calculate total patients
+                const totalPatients = table.rows().count();
+
+                var ctx = document.getElementById('summaryChart').getContext('2d');
+
+                // Check if chart already exists. If yes, destroy it.
+                if (window.summaryChart instanceof Chart) {
+                    window.summaryChart.destroy();
+                }
+
+                window.summaryChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        
+                        labels: ['Total', 'INSEE', 'Warehouse'],
+                        datasets: [{
+                            label: 'Nombre de Patients',
+                            data: [totalPatients, inseeCount, warehouseCount],
+                            backgroundColor: ['#00487E', '#D6EAF8', '#DAF7A6'],
+                            borderColor: ['#00487E', '#D6EAF8', '#DAF7A6'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        },
+                        legend: {
+                            display: false
+                        }
+                    }
+                });
+            }
+
+
+
+
             dateDecesElements.forEach(function (element) {
                 const date = element.textContent;
                 if (date) {
@@ -148,14 +269,33 @@
                 const options = { year: "numeric", month: "2-digit", day: "2-digit" };
                 return new Date(dateString).toLocaleDateString(undefined, options);
             }
-        });
-    </script>
 
-    <script>
-        $('.datatable').DataTable({
-            pageLength: 100,
-            order: [[0, 'desc']]
-        });
+            // Define the custom order sequence
+            var customOrder = ['Warehouse', 'INSEE', 'Non trouvée'];
 
+            // Custom sorting function
+            jQuery.fn.dataTable.ext.type.order['custom-order-pre'] = function (data) {
+                var index = customOrder.indexOf(data);
+                return index === -1 ? Infinity : index;
+            };
+
+            // Initialize DataTable
+            $('.datatable').DataTable({
+                pageLength: 100,
+                columnDefs: [
+                    { type: 'custom-order', targets: 0 }
+                ],
+                createdRow: function (row, data, dataIndex) {
+                    // Check if the first column (index 0) contains 'INSEE'
+                    if (data[0] === 'INSEE') {
+                        $(row).css('background-color', '#D6EAF8');
+                    }
+                    if (data[0] === 'Warehouse') {
+                        $(row).css('background-color', '#DAF7A6');
+                    }
+                }
+            });
+            updateSummary();
+        });
     </script>
 </body>

@@ -101,6 +101,35 @@
             max-width: 700px;
             margin: 20px auto;
         }
+
+        .bottom-banner {
+            background: linear-gradient(to bottom,#0079C0,  #00487E ); /* Darker background */
+            opacity: 0.8;
+            color: #FFF;
+            padding: 15px;
+            text-align: center;
+        }
+
+
+        @media only screen and (max-width: 600px) {
+            .search-container, .white-background, .search-info {
+                margin: 10px;
+                width: auto;
+            }
+
+            .banner img {
+                width: 100%;
+            }
+        }
+
+        .input-group input:focus {
+            border-color: #00487E;
+            outline: none;
+        }
+
+        .input-group input::placeholder {
+            color: #aaa;
+        }
     </style>
 </head>
 
@@ -110,9 +139,10 @@
             width="250">
     </div>
     <div class="search-container">
-        <h2>Enregistrement des personnes décédées : INSEE et Hôpital Foch</h2>
+        <h2>Registre des personnes décédées : INSEE et Hôpital Foch</h2>
         <form method="post" action="{% url 'home' %}" id="search-form">
             {% csrf_token %}
+
             <div class="input-group">
                 <label for="{{ form.nom.id_for_label }}">Nom de naissance :</label>
                 <input type="text" name="{{ form.nom.name }}" id="{{ form.nom.id_for_label }}"
@@ -134,9 +164,19 @@
 
         <script>
             document.getElementById('reset-button').addEventListener('click', function () {
-                document.getElementById('{{ form.nom.id_for_label }}').value = '';
-                document.getElementById('{{ form.prenom.id_for_label }}').value = '';
-                document.getElementById('{{ form.date_naiss.id_for_label }}').value = '';
+                var nomField = document.getElementById('{{ form.nom.id_for_label }}');
+                var prenomField = document.getElementById('{{ form.prenom.id_for_label }}');
+                var dateNaissField = document.getElementById('{{ form.date_naiss.id_for_label }}');
+        
+                if (nomField) {
+                    nomField.value = '';
+                }
+                if (prenomField) {
+                    prenomField.value = '';
+                }
+                if (dateNaissField) {
+                    dateNaissField.value = '';
+                }
             });
         </script>
 
@@ -144,17 +184,20 @@
         {% if patients %}
         <h2>Résultats de la recherche :</h2>
         {% for patient in patients %}
-        {{ patient.nom }} {{ patient.prenom }} <br>
-        Date de décès : {{ patient.date_deces }}
+        Nom: {{ patient.nom }} <br>
+        Prénom: {{ patient.prenom }} <br>
+        Date de naissance: {{ patient.date_naiss }} <br>
+        Date de décès: {{ patient.date_deces }} <br>
+        Source: {{ patient.source }} <br><br>
         {% endfor %}
         {% else %}
-        <!-- Message "Aucun patient correspondant" -->
         <p class="no-patient-message" id="no-patient-message">Aucun patient correspondant dans la base</p>
         {% endif %}
         {% endif %}
     </div>
 
-    <div class="white-background"> <!-- Nouveau bloc blanc -->
+    <div class="white-background">
+        <!-- Nouveau bloc blanc -->
         <h2>Recherche par fichiers Excel/CSV</h2>
         <div style="margin-bottom: 20px;"></div>
 
@@ -176,13 +219,16 @@
     </div>
 
     <!-- Ajout d'une nouvelle bannière en bas -->
-    <div class="bottom-banner" style="background-color: #C9C9C9; color: #FFFFFF; padding: 15px; text-align: center;">
-        <h2>Version 1.0</h2>
-        <p>Made by Sarra Ben Yahia</p>
+    <div class="bottom-banner">
+        <footer>
+            <div class="footer-container">
+                <p>© 2023 Moteur de Recherche INSEE/Hôpital Foch. All rights reserved.</p>
+                <p>Developed by Sarra Ben Yahia</p>
+            </div>
+        </footer>
     </div>
-
-    <!-- Ajout d'une nouvelle bannière en bas -->
-
 </body>
 
 </html>
+
+    <!-- Ajout d'une nouvelle bannière en bas -->

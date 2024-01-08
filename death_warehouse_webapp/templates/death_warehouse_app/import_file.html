@@ -1,20 +1,15 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Importation de fichiers</title>
-
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
     <script type="text/javascript" src="{% static 'js/custom.js' %}"></script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gabarito:wght@700&display=swap">
-
+    <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Gabarito', sans-serif;
@@ -59,6 +54,7 @@
             display: block;
             text-align: left;
             margin-bottom: 5px;
+            font-weight: bold;
         }
 
         .input-group input[type="file"] {
@@ -79,50 +75,168 @@
         }
 
         .instructions {
-            text-align: left;
-            padding: 10px;
-            background-color: #C9C9C9;
-            color: #010101;
+            background-color: #EFEFEF;
+            color: #333;
+            padding: 15px;
             border-radius: 4px;
             margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .bottom-banner {
+            background: linear-gradient(to bottom,#0079C0,  #00487E ); /* Darker background */
+            opacity: 0.8;
+            color: #FFF;
+            padding: 15px;
+            text-align: center;
+        }
+
+
+            #spinner {
+                display: none; /* Hidden by default */
+                text-align: center; /* Center the loader horizontally */
+                margin: 20px 0; /* Add some space above and below the spinner */
+            }
+
+
+        .loader {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .loader div {
+            position: absolute;
+            top: 33px;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background-color: #93BE1E; /* Change color if needed */
+            animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        }
+
+        .loader div:nth-child(1) {
+            left: 8px;
+            animation: loader1 0.6s infinite;
+        }
+
+        .loader div:nth-child(2) {
+            left: 8px;
+            animation: loader2 0.6s infinite;
+        }
+
+        .loader div:nth-child(3) {
+            left: 32px;
+            animation: loader2 0.6s infinite;
+        }
+
+        .loader div:nth-child(4) {
+            left: 56px;
+            animation: loader3 0.6s infinite;
+        }
+
+        @keyframes loader1 {
+            0% {
+                transform: scale(0);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes loader2 {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(24px, 0);
+            }
+        }
+
+        @keyframes loader3 {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(0);
+            }
+        }
+
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 90%;
+                margin: 20px auto;
+            }
+
+
+
+
         }
     </style>
 </head>
-
 <body>
     <div class="banner">
-        <img src="https://upload.wikimedia.org/wikipedia/fr/d/d4/Logo_HOPITAL_FOCH.png" alt="Image d'accueil"
-            width="250">
+        <img src="https://upload.wikimedia.org/wikipedia/fr/d/d4/Logo_HOPITAL_FOCH.png" alt="Image d'accueil" width="250">
     </div>
     <div class="container">
         <h2>Choisissez un fichier à importer</h2>
-        <form method="post" enctype="multipart/form-data" action="{% url 'import_file' %}">
+        <form method="post" enctype="multipart/form-data" action="{% url 'import_file' %}" id="file-upload-form">
             {% csrf_token %}
             <div class="input-group">
-                <label for="{{ form.file.id_for_label }}">Sélectionnez un fichier (Excel ou CSV) :</label>
                 {{ form.file }}
             </div>
-            <button type="submit" class="button">Importer</button>
+            <button type="submit" class="button">Effectuer la recherche</button>
+            
         </form>
+        <div id="file-upload-feedback" style="display:none; margin-top:10px;">Fichier sélectionné : <span id="file-name"></span></div>
 
-
-
-
+        <div id="spinner" style="display:none;">
+            <div class="loader">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
     </div>
-
     <div class="instructions"
         style="background: linear-gradient(to bottom, #0079C0, #93BE1E); color: #F9FCFF; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 600px; text-align: left;">
         <h3 style="margin-bottom: 10px;">Comment importer un fichier :</h3>
         <ul style="list-style-type: disc; padding-left: 20px;">
             <li>Choisissez un fichier au format Excel (.xlsx) ou CSV (.csv) à importer.</li>
-            <li>Vérifiez que le fichier contient au moins les informations suivantes : nom de naissance, prénom et date
-                de naissance
-                du patient.</li>
+            <li>Assurez-vous que le fichier inclut au minimum les données suivantes : IPP, Nom, Nom de naissance, Prénom, et Date de naissance du patient. Il est important de vérifier que les noms des variables correspondent exactement à ceux mentionnés ci-dessus.</li>
             <li>Assurez-vous que la date de naissance est au format jour/mois/année.</li>
         </ul>
     </div>
-
     <a href="{% url 'home' %}" class="button">Retour à l'accueil</a>
-</body>
 
+
+    <script>
+        document.getElementById('{{ form.file.id_for_label }}').addEventListener('change', function(e) {
+            var fileName = e.target.files[0].name;
+            document.getElementById('file-name').textContent = fileName;
+            document.getElementById('file-upload-feedback').style.display = 'block';
+        });
+    </script>
+
+
+    <script>
+        // Listener for file selection
+        document.getElementById('{{ form.file.id_for_label }}').addEventListener('change', function(e) {
+            var fileName = e.target.files[0].name;
+            document.getElementById('file-name').textContent = fileName;
+            document.getElementById('file-upload-feedback').style.display = 'block';
+        });
+
+        // Listener for form submission
+        document.getElementById('file-upload-form').addEventListener('submit', function() {
+            document.getElementById('spinner').style.display = 'block';
+        });
+    </script>
+
+
+
+</body>
 </html>
