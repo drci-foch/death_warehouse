@@ -8,7 +8,7 @@ import csv
 import openpyxl
 from django.db.models import Q
 from .utils import fetch_merged_data  
-from django.core.cache import cache
+from django.shortcuts import render
 
 
 # --------------------------------------------------------------------------------- Search home part 
@@ -94,7 +94,6 @@ def import_data_from_file(file):
         df = pd.read_excel(file, engine='openpyxl')
     else:
         raise ValueError("Unsupported file format")
-
     return df
 
 
@@ -105,7 +104,6 @@ def try_parse_date(date_str, formats):
     for date_format in formats:
         try:
             # Parse the date and format it in the Django expected format (YYYY-MM-DD)
-
             return datetime.strptime(date_part, date_format).date().isoformat()
         except ValueError:
             continue
@@ -120,7 +118,7 @@ def parse_date(date_value, date_formats):
 
 def patient_data_view(request):
     page = request.GET.get('page', 1)
-    page_size = 100  # Or any number you prefer
+    page_size = 100 
     data = fetch_merged_data(page=page, page_size=page_size)
 
     return render(request, 'test.html', {'data': data, 'page': page})
@@ -173,14 +171,17 @@ def create_verification_result(patient, date_naiss_iso, found, ipp=None, source=
         'patient_details': patient_details
     }
 
-# Function with caching
-def search_patient(nom, prenom, date_naiss_iso):
-    # First try to find the patient in the WarehousePatient model
-    patient = search_warehousepatient(nom, prenom, date_naiss_iso)
-
-    # If not found in WarehousePatient, then try in INSEEPatient
+def search_patient(nom_naiss, nom_usage, prenom, date_naiss_iso):
+    # First try to find the patient in the WarehousePatient model using the usage name
+    patient = search_warehousepatient(nom_usage, prenom, date_naiss_iso)
+    
+    # If not found in WarehousePatient, then try in INSEEPatient using the usage name
     if not patient:
-        patient = search_inseepatient(nom, prenom, date_naiss_iso)
+        patient = search_inseepatient(nom_usage, prenom, date_naiss_iso)
+
+    # If still not found and the birth name is different from the usage name, try INSEEPatient with the birth name
+    if not patient and nom_naiss != nom_usage:
+        patient = search_inseepatient(nom_naiss, prenom, date_naiss_iso)
 
     return patient
 
@@ -189,7 +190,7 @@ def search_patient(nom, prenom, date_naiss_iso):
 def get_verification_results(df):
     date_formats = ['%d/%m/%Y', '%Y-%m-%d'] 
     verification_results = []
-    batch_size = 500  
+    batch_size = 300  
 
     for start in range(0, len(df), batch_size):
         end = start + batch_size
@@ -199,10 +200,11 @@ def get_verification_results(df):
             date_naiss_iso = parse_date(row['Date de naissance'], date_formats)
        
             ipp = row['IPP']
-            nom = row['Nom']
+            nom_usage = row['Nom']
+            nom_naiss = row.get('Nom de naissance','')
             prenom = row.get('Prénom', '')
   
-            patient = search_patient(nom, prenom, date_naiss_iso)
+            patient = search_patient(nom_naiss, nom_usage, prenom, date_naiss_iso)
             if patient:
                 verification_result = create_verification_result(patient, date_naiss_iso, True, ipp=ipp)
             else:
@@ -215,6 +217,7 @@ def get_verification_results(df):
 # --------------------------------------------------------------------------------- Display results part
 
 def import_file(request):
+
     if request.method == 'POST':
         form = ImportFileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -226,6 +229,9 @@ def import_file(request):
                 return render(request, 'death_warehouse_app/verification_results.html', {'results': verification_results})
             except ValueError:
                 return render(request, 'death_warehouse_app/import_error.html')
+            except KeyError as e:
+                return render(request, 'friendly_error_page.html', {'error_message': str(e)})
+
 
     else:
         form = ImportFileForm()
@@ -240,7 +246,7 @@ def format_date(date_str):
             date_obj = datetime.strptime(date_str, '%Y-%m-%d')
             return date_obj.strftime('%d/%m/%Y')
         except ValueError:
-            return "Invalid Format"  # or return original date_str or empty string
+            return "Invalid Format"
     return "" 
 
 def export_results_csv(request):
