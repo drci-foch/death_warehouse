@@ -15,3 +15,7 @@ document.querySelectorAll('input[type="reset"]').forEach(function (resetButton) 
     });
 });
 
+document.getElementById('file-upload-form').addEventListener('submit', function() {
+    document.getElementById('spinner').style.display = 'block';
+    document.getElementById('file-upload-feedback').style.display = 'none';
+});
