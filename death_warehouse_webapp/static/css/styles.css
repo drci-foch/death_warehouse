@@ -35,7 +35,7 @@ ul {
     max-width: 600px;
     margin: 0 auto;
     text-align: left;
-    /* Aligner le texte à gauche */
+
 }
 
 .input-group label {
@@ -51,7 +51,7 @@ ul {
     border-radius: 4px;
     box-sizing: border-box;
     max-width: 100%;
-    /* Ajoutez cette ligne pour limiter la largeur */
+
 }
 
 /* Style pour le message "Aucun patient correspondant" */
