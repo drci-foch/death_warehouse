@@ -4,15 +4,17 @@ import csv
 from datetime import datetime
 from django.db import connections, DatabaseError
 import logging
+from django.core.exceptions import MultipleObjectsReturned
 
 # Setup Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "death_warehouse_webapp.settings")
 django.setup()
+logger = logging.getLogger(__name__)
 
 from death_warehouse_app.models import INSEEPatient, WarehousePatient  
 # Import data from CSV file
 def import_data_from_csv(file_path):
-    with open(file_path, 'r', encoding='latin-1', errors='ignore') as csvfile:  # Adjust encoding if needed
+    with open(file_path, 'r', encoding='latin-1', errors='ignore') as csvfile:
         reader = csv.DictReader(csvfile)
 
         for row in reader:
@@ -28,29 +30,36 @@ def import_data_from_csv(file_path):
                 try:
                     date_naiss = datetime.strptime(date_naiss, '%Y/%m/%d').date()
                 except ValueError:
-                    date_naiss = None
-            
+                    logger.warning(f"Invalid date_naiss format for {nom} {prenom}. Skipping record.")
+                    continue
+            else:
+                logger.warning(f"Missing date_naiss for {nom} {prenom}. Skipping record.")
+                continue
+
             if date_deces:
                 try:
                     date_deces = datetime.strptime(date_deces, '%Y/%m/%d').date()
                 except ValueError:
                     date_deces = None
 
-            INSEEPatient.objects.update_or_create(
-                nom=nom,
-                prenom=prenom,
-                defaults={
-                    'date_naiss': date_naiss,
-                    'pays_naiss': pays_naiss,
-                    'lieu_naiss': lieu_naiss,
-                    'code_naiss': code_naiss,
-                    'date_deces': date_deces,
-                }
-            )
+            try:
+                INSEEPatient.objects.update_or_create(
+                    nom=nom,
+                    prenom=prenom,
+                    date_naiss=date_naiss,
+                    defaults={
+                        'pays_naiss': pays_naiss,
+                        'lieu_naiss': lieu_naiss,
+                        'code_naiss': code_naiss,
+                        'date_deces': date_deces,
+                    }
+                )
+            except MultipleObjectsReturned:
+                logger.warning(f"Duplicate record skipped for {nom} {prenom} born on {date_naiss}.")
+                continue  
 
 # Import data from SQL query
 def import_data_from_db():
-    logger = logging.getLogger(__name__)
 
     try:
         with connections['my_oracle'].cursor() as cursor:
