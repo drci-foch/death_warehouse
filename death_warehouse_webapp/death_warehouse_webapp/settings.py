@@ -84,11 +84,11 @@ DATABASES = {
     },
     'my_oracle': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': 'dwh',  # Or your Oracle service name
-        'USER': 'drci002',
-        'PASSWORD': 'Gbu!459deux3',
-        'HOST': 'srvapp522',  # Usually the IP address or domain name
-        'PORT': '1521',  # Default Oracle port
+        'NAME': 'YOUR_NAME',  
+        'USER': 'YOUR_USER',
+        'PASSWORD': 'YOUR_PASSWORD',
+        'HOST': 'YOUR_HOST',
+        'PORT': 'YOUR_PORT', 
     },
 }
 
