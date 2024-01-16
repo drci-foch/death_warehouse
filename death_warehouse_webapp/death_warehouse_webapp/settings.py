@@ -84,11 +84,11 @@ DATABASES = {
     },
     'my_oracle': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': 'YOUR_NAME',  
-        'USER': 'YOUR_USER',
-        'PASSWORD': 'YOUR_PASSWORD',
-        'HOST': 'YOUR_HOST',
-        'PORT': 'YOUR_PORT', 
+        'NAME': 'dwh',  
+        'USER': 'drci002',
+        'PASSWORD': 'Gbu!459deux3',
+        'HOST': 'srvapp522',
+        'PORT': '1521', 
     },
 }
 
