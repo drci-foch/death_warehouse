@@ -1,4 +1,4 @@
-# Django Patient Records Updater
+# VitaInspect
 
 ## Project Description 🏨
 
