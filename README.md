@@ -16,6 +16,14 @@ This Django web application is designed to facilitate the updating of patient de
 - Oracle Database Synchronization: After processing, the application ensures that the Oracle database of Hôpital Foch is up-to-date with the latest records.
 - Search Engine: Users can search for specific patient records using criteria such as name, first name, and date of birth. 
 
+<p align="center">
+    <img src="./CaptureResumeResult.PNG" width="700">
+</p>
+
+<p align="center">
+    <img src="./CaptureResultatRecherche.png" width="700">
+</p>
+
 
 ## TODO: 📝 
 
