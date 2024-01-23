@@ -304,7 +304,11 @@ def get_emails_for_ipps(verification_results):
         sql_query = f"""
         SELECT 
             ipph.HOSPITAL_PATIENT_ID AS "IPP",
-            p.EMAIL AS "Mail"
+            p.EMAIL AS "Mail",
+            p.RESIDENCE_ADDRESS as "Adresse",
+            p.ZIP_CODE as "ZIP",
+            p.RESIDENCE_CITY as "Ville",
+            p.RESIDENCE_COUNTRY as "Pays"
         FROM 
             DWH.DWH_PATIENT p
         LEFT JOIN 
@@ -312,7 +316,7 @@ def get_emails_for_ipps(verification_results):
         WHERE 
             ipph.HOSPITAL_PATIENT_ID IN ({ipp_list})
         """
-
+        print(sql_query)
         # Execute the query for the batch and append the results
         batch_results = execute_sql_query(sql_query)  # This function should return a dictionary {IPP: email}
         email_data.extend(batch_results)
@@ -330,7 +334,7 @@ def export_results_csv(request):
         response.write(u'\ufeff'.encode('utf8'))  # BOM (optional; for Excel compatibility)
 
         writer = csv.writer(response)
-        writer.writerow(['Source', 'IPP', 'Nom', 'Prénom', 'Date de naissance', 'Date de décès', 'Mail'])
+        writer.writerow(['Source', 'IPP', 'Nom', 'Prénom', 'Date de naissance', 'Date de décès', 'Mail','Adresse','Code','Ville','Pays'])
     
         for result in verification_results:
             formatted_date_naiss = format_date(result['patient_details']['date_naiss'])
@@ -340,6 +344,11 @@ def export_results_csv(request):
 
             # Find the email associated with the IPP
             email = next((item.get('Mail', '') for item in email_data if item.get('IPP') == ipp), '')
+            adress = next((item.get('Adresse', '') for item in email_data if item.get('IPP') == ipp), '')
+            code = next((item.get('ZIP', '') for item in email_data if item.get('IPP') == ipp), '')
+            ville = next((item.get('Ville', '') for item in email_data if item.get('IPP') == ipp), '')
+            pays = next((item.get('Pays', '') for item in email_data if item.get('IPP') == ipp), '')
+
 
             writer.writerow([
                 result['patient_exists'],
@@ -348,7 +357,11 @@ def export_results_csv(request):
                 result['patient_details']['prenom'],
                 formatted_date_naiss,
                 formatted_date_deces,
-                email  # Add the email to the CSV
+                email,
+                adress,
+                code,
+                ville,
+                pays
             ])
 
         return response
@@ -366,7 +379,7 @@ def export_results_xlsx(request):
 
         workbook = openpyxl.Workbook()
         worksheet = workbook.active
-        worksheet.append(['Source', 'IPP', 'Nom', 'Prénom', 'Date de naissance', 'Date de décès', 'Mail'])
+        worksheet.append(['Source', 'IPP', 'Nom', 'Prénom', 'Date de naissance', 'Date de décès', 'Mail', 'Adresse','Code','Ville','Pays'])
 
         for result in verification_results:
             formatted_date_naiss = format_date(result['patient_details']['date_naiss'])
@@ -375,6 +388,10 @@ def export_results_xlsx(request):
             
             # Find the email associated with the IPP
             email = next((item.get('Mail', '') for item in email_data if item.get('IPP') == ipp), '')
+            adress = next((item.get('Adresse', '') for item in email_data if item.get('IPP') == ipp), '')
+            code = next((item.get('ZIP', '') for item in email_data if item.get('IPP') == ipp), '')
+            ville = next((item.get('Ville', '') for item in email_data if item.get('IPP') == ipp), '')
+            pays = next((item.get('Pays', '') for item in email_data if item.get('IPP') == ipp), '')
 
             worksheet.append([
                 result['patient_exists'],
@@ -383,7 +400,11 @@ def export_results_xlsx(request):
                 result['patient_details']['prenom'],
                 formatted_date_naiss,
                 formatted_date_deces,
-                email  # Add the email to the XLSX
+                email,
+                adress,
+                code,
+                ville,
+                pays
             ])
 
         workbook.save(response)
