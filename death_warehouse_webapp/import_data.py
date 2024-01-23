@@ -70,6 +70,7 @@ def import_data_from_db():
                         p.FIRSTNAME,
                         p.BIRTH_DATE,
                         p.SEX,
+                        p.EMAIL,
                         p.MAIDEN_NAME,
                         p.DEATH_DATE,
                         p.BIRTH_COUNTRY,
@@ -77,7 +78,7 @@ def import_data_from_db():
                     FROM DWH.DWH_PATIENT p
                     JOIN DWH.DWH_PATIENT_IPPHIST i ON p.PATIENT_NUM = i.PATIENT_NUM
                     WHERE p.DEATH_DATE IS NOT NULL
-                    GROUP BY p.PATIENT_NUM, p.LASTNAME, p.FIRSTNAME, p.BIRTH_DATE, p.SEX, p.MAIDEN_NAME, p.DEATH_DATE, p.BIRTH_COUNTRY
+                    GROUP BY p.PATIENT_NUM, p.LASTNAME, p.FIRSTNAME, p.BIRTH_DATE, p.SEX, p.EMAIL, p.MAIDEN_NAME, p.DEATH_DATE, p.BIRTH_COUNTRY
             """)
             data = cursor.fetchall()
 
@@ -88,11 +89,12 @@ def import_data_from_db():
                         'LASTNAME': row[1],
                         'FIRSTNAME': row[2],
                         'BIRTH_DATE': row[3],
+                        'MAIL': row[5],
                         'SEX': row[4],
-                        'MAIDEN_NAME': row[5],
-                        'DEATH_DATE': row[6],
-                        'BIRTH_COUNTRY': row[7],
-                        'HOSPITAL_PATIENT_ID': row[8],
+                        'MAIDEN_NAME': row[6],
+                        'DEATH_DATE': row[7],
+                        'BIRTH_COUNTRY': row[8],
+                        'HOSPITAL_PATIENT_ID': row[9],
                     }
                 )
 
@@ -102,10 +104,10 @@ def import_data_from_db():
 
 if __name__ == "__main__":
     try:
-        date_du_jour = datetime.now().strftime("%d%m%Y")
-        file_path = os.path.abspath(f"../deces_insee/deces_global_maj_{date_du_jour}.csv")
-        import_data_from_csv(file_path)
-        print("CSV Data import completed successfully.")
+        # date_du_jour = datetime.now().strftime("%d%m%Y")
+        # file_path = os.path.abspath(f"../deces_insee/deces_global_maj_{date_du_jour}.csv")
+        # import_data_from_csv(file_path)
+        # print("CSV Data import completed successfully.")
 
         import_data_from_db()
         print("SQL Data import completed successfully.")
