@@ -7,4 +7,4 @@ class INSEEPatientAdmin(admin.ModelAdmin):
 
 @admin.register(WarehousePatient)
 class WarehousePatientAdmin(admin.ModelAdmin):
-    list_display = ('PATIENT_NUM', 'LASTNAME', 'FIRSTNAME', 'BIRTH_DATE', 'SEX', 'MAIDEN_NAME', 'DEATH_DATE', 'BIRTH_COUNTRY', 'HOSPITAL_PATIENT_ID')
+    list_display = ('PATIENT_NUM', 'LASTNAME', 'FIRSTNAME', 'BIRTH_DATE', 'SEX', 'MAIL', 'MAIDEN_NAME', 'DEATH_DATE', 'BIRTH_COUNTRY', 'HOSPITAL_PATIENT_ID')

@@ -9,7 +9,8 @@ import openpyxl
 from django.db.models import Q
 from .utils import fetch_merged_data  
 from django.shortcuts import render
-
+from django.db import connections
+import cx_Oracle
 
 # --------------------------------------------------------------------------------- Search home part 
 
@@ -48,6 +49,7 @@ def format_patient_data(patients):
             formatted_patient = {
                 'nom': patient.LASTNAME,
                 'prenom': patient.FIRSTNAME,
+                'mail': patient.MAIL,
                 'date_naiss': format_date_for_display(patient.BIRTH_DATE),
                 'date_deces': format_date_for_display(patient.DEATH_DATE),
                 'source': 'Warehouse'
@@ -153,6 +155,7 @@ def create_verification_result(patient, date_naiss_iso, found, ipp=None, source=
                 'ipp': ipp,
                 'nom': patient.LASTNAME,
                 'prenom': patient.FIRSTNAME,
+                'mail': patient.MAIL,
                 'date_naiss': patient.BIRTH_DATE.strftime('%Y-%m-%d'),  
                 'date_deces': patient.DEATH_DATE.strftime('%Y-%m-%d') if patient.DEATH_DATE else ""
             }
@@ -249,8 +252,77 @@ def format_date(date_str):
             return "Invalid Format"
     return "" 
 
+
+
+def execute_sql_query(sql_query, database='my_oracle'):
+    """
+    Execute an SQL query and return the results as a list of dictionaries.
+    The 'database' parameter is optional and defaults to 'my_oracle'.
+    This function expects connections to be available globally under the name 'connections'.
+    """
+    connection = connections[database]  # Assuming you have set up the 'connections' dictionary elsewhere
+    
+    cursor = connection.cursor()
+    result = []
+    try:
+        cursor.execute(sql_query)
+        
+        columns = [desc[0] for desc in cursor.description]
+        rows = cursor.fetchall()
+        
+        for row in rows:
+            item = {}
+            for i, col in enumerate(row):
+                if col is not None:
+                    item[columns[i]] = str(col)
+            result.append(item)
+        
+    except Exception as e:
+        print("Error executing SQL query:", e)
+    
+    finally:
+        cursor.close()
+    
+    return result
+
+
+def get_emails_for_ipps(verification_results):
+    # Extract IPPs
+    ipps = [result['patient_details']['ipp'] for result in verification_results]
+
+    # Split IPPs into batches of 500
+    batch_size = 500
+    ipps_batches = [ipps[i:i + batch_size] for i in range(0, len(ipps), batch_size)]
+
+    # Placeholder for database query execution
+    email_data = []
+
+    for batch in ipps_batches:
+        # Create a comma-separated string of IPPs for the SQL query
+        ipp_list = ','.join([f"'{ipp}'" for ipp in batch])
+
+        sql_query = f"""
+        SELECT 
+            ipph.HOSPITAL_PATIENT_ID AS "IPP",
+            p.EMAIL AS "Mail"
+        FROM 
+            DWH.DWH_PATIENT p
+        LEFT JOIN 
+            DWH.DWH_PATIENT_IPPHIST ipph ON p.PATIENT_NUM = ipph.PATIENT_NUM
+        WHERE 
+            ipph.HOSPITAL_PATIENT_ID IN ({ipp_list})
+        """
+
+        # Execute the query for the batch and append the results
+        batch_results = execute_sql_query(sql_query)  # This function should return a dictionary {IPP: email}
+        email_data.extend(batch_results)
+
+    return email_data
+
+
 def export_results_csv(request):
     verification_results = request.session.get('verification_results')
+    email_data = get_emails_for_ipps(verification_results)  # Get email data
 
     if verification_results is not None:
         response = HttpResponse(content_type='text/csv')
@@ -258,28 +330,35 @@ def export_results_csv(request):
         response.write(u'\ufeff'.encode('utf8'))  # BOM (optional; for Excel compatibility)
 
         writer = csv.writer(response)
-        writer.writerow(['Source', 'IPP', 'Nom', 'Prénom', 'Date de naissance', 'Date de décès'])
-
+        writer.writerow(['Source', 'IPP', 'Nom', 'Prénom', 'Date de naissance', 'Date de décès', 'Mail'])
+    
         for result in verification_results:
             formatted_date_naiss = format_date(result['patient_details']['date_naiss'])
             formatted_date_deces = format_date(result['patient_details']['date_deces'])
+            
+            ipp = str(result['patient_details']['ipp']) 
+
+            # Find the email associated with the IPP
+            email = next((item.get('Mail', '') for item in email_data if item.get('IPP') == ipp), '')
 
             writer.writerow([
                 result['patient_exists'],
-                result['patient_details']['ipp'],
+                ipp,
                 result['patient_details']['nom'],
                 result['patient_details']['prenom'],
                 formatted_date_naiss,
-                formatted_date_deces
+                formatted_date_deces,
+                email  # Add the email to the CSV
             ])
 
         return response
     else:
+        print("No verification results found in the session.")  # Debug statement
         return HttpResponse("Aucun résultat de vérification à exporter.")
-
 
 def export_results_xlsx(request):
     verification_results = request.session.get('verification_results')
+    email_data = get_emails_for_ipps(verification_results)  # Get email data
 
     if verification_results is not None:
         response = HttpResponse(content_type='application/ms-excel')
@@ -287,21 +366,25 @@ def export_results_xlsx(request):
 
         workbook = openpyxl.Workbook()
         worksheet = workbook.active
-        worksheet.append(['Source', 'IPP', 'Nom', 'Prénom', 'Date de naissance', 'Date de décès'])
+        worksheet.append(['Source', 'IPP', 'Nom', 'Prénom', 'Date de naissance', 'Date de décès', 'Mail'])
 
         for result in verification_results:
             formatted_date_naiss = format_date(result['patient_details']['date_naiss'])
             formatted_date_deces = format_date(result['patient_details']['date_deces'])
+            ipp = str(result['patient_details']['ipp'])
+            
+            # Find the email associated with the IPP
+            email = next((item.get('Mail', '') for item in email_data if item.get('IPP') == ipp), '')
 
             worksheet.append([
                 result['patient_exists'],
-                result['patient_details']['ipp'],
+                ipp,
                 result['patient_details']['nom'],
                 result['patient_details']['prenom'],
                 formatted_date_naiss,
-                formatted_date_deces
+                formatted_date_deces,
+                email  # Add the email to the XLSX
             ])
-
 
         workbook.save(response)
         return response

@@ -54,6 +54,7 @@ class WarehousePatient(models.Model):
     FIRSTNAME = models.CharField(max_length=100, blank=True, null=True)
     BIRTH_DATE = models.DateField(null=True, db_index=True)
     SEX = models.CharField(max_length=10, blank=True, null=True)
+    MAIL = models.CharField(max_length=100, blank=True, null=True)
     MAIDEN_NAME = models.CharField(max_length=100, null=True, blank=True)
     DEATH_DATE = models.DateField(null=True, blank=True)
     BIRTH_COUNTRY = models.CharField(max_length=50, blank=True, null=True)

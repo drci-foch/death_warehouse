@@ -14,6 +14,7 @@ def fetch_merged_data(page=1, page_size=25):
                     p.FIRSTNAME,
                     p.BIRTH_DATE,
                     p.SEX,
+                    p.EMAIL,
                     p.MAIDEN_NAME,
                     p.DEATH_DATE,
                     p.BIRTH_COUNTRY,
