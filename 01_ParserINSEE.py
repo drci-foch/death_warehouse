@@ -3,7 +3,7 @@ import csv
 from datetime import datetime
 
 characters = "/"
-dossier = ".//deces_insee/"
+dossier = "./deces_insee/"
 donnees_globales = []
 
 
@@ -53,6 +53,7 @@ def extraire_informations(ligne):
 for fichier in os.listdir(dossier):
     if fichier.endswith(".txt"):
         chemin_fichier = os.path.join(dossier, fichier)
+        
 
         with open(chemin_fichier, 'r', encoding='latin-1') as f:
             lignes = f.readlines()
