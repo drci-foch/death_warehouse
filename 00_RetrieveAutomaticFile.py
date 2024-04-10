@@ -27,7 +27,7 @@ prefs = {
 options.add_experimental_option("prefs", prefs)
 
 # Initialize the Edge driver
-edge_service = Service('C:/Users/benysar/Documents/edgedriver_win64/msedgedriver.exe')  # Replace with your Edge WebDriver path
+edge_service = Service('C:/Users/benysar/Downloads/edgedriver_win64/msedgedriver.exe')  # Replace with your Edge WebDriver path
 driver = webdriver.Edge(service=edge_service, options=options)
 
 def extraire_liens_fichiers(url):

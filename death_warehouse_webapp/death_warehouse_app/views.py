@@ -87,7 +87,7 @@ def home(request):
     return render(request, 'death_warehouse_app/home.html', context)
 
 
-# --------------------------------------------------------------------------------- Import part 
+# --------------------------------------------------------------------------------- Import  
 
 def import_data_from_file(file):
     if file.name.endswith('.csv'):
@@ -217,7 +217,7 @@ def get_verification_results(df):
 
     return verification_results
 
-# --------------------------------------------------------------------------------- Display results part
+# --------------------------------------------------------------------------------- Display results 
 
 def import_file(request):
 
@@ -260,7 +260,7 @@ def execute_sql_query(sql_query, database='my_oracle'):
     The 'database' parameter is optional and defaults to 'my_oracle'.
     This function expects connections to be available globally under the name 'connections'.
     """
-    connection = connections[database]  # Assuming you have set up the 'connections' dictionary elsewhere
+    connection = connections[database]  
     
     cursor = connection.cursor()
     result = []
@@ -323,6 +323,7 @@ def get_emails_for_ipps(verification_results):
 
     return email_data
 
+# --------------------------------------------------------------------------------- Exporting results
 
 def export_results_csv(request):
     verification_results = request.session.get('verification_results')
@@ -371,7 +372,7 @@ def export_results_csv(request):
 
 def export_results_xlsx(request):
     verification_results = request.session.get('verification_results')
-    email_data = get_emails_for_ipps(verification_results)  # Get email data
+    #email_data = get_emails_for_ipps(verification_results)  # Get email data
 
     if verification_results is not None:
         response = HttpResponse(content_type='application/ms-excel')
@@ -387,11 +388,11 @@ def export_results_xlsx(request):
             ipp = str(result['patient_details']['ipp'])
             
             # Find the email associated with the IPP
-            email = next((item.get('Mail', '') for item in email_data if item.get('IPP') == ipp), '')
-            adress = next((item.get('Adresse', '') for item in email_data if item.get('IPP') == ipp), '')
-            code = next((item.get('ZIP', '') for item in email_data if item.get('IPP') == ipp), '')
-            ville = next((item.get('Ville', '') for item in email_data if item.get('IPP') == ipp), '')
-            pays = next((item.get('Pays', '') for item in email_data if item.get('IPP') == ipp), '')
+            #email = next((item.get('Mail', '') for item in email_data if item.get('IPP') == ipp), '')
+            #adress = next((item.get('Adresse', '') for item in email_data if item.get('IPP') == ipp), '')
+            #code = next((item.get('ZIP', '') for item in email_data if item.get('IPP') == ipp), '')
+            #ville = next((item.get('Ville', '') for item in email_data if item.get('IPP') == ipp), '')
+            #pays = next((item.get('Pays', '') for item in email_data if item.get('IPP') == ipp), '')
 
             worksheet.append([
                 result['patient_exists'],
@@ -400,11 +401,11 @@ def export_results_xlsx(request):
                 result['patient_details']['prenom'],
                 formatted_date_naiss,
                 formatted_date_deces,
-                email,
-                adress,
-                code,
-                ville,
-                pays
+                #email,
+                #adress,
+                #code,
+                #ville,
+                #pays
             ])
 
         workbook.save(response)
