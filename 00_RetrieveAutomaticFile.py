@@ -27,11 +27,12 @@ prefs = {
 options.add_experimental_option("prefs", prefs)
 
 # Initialize the Edge driver
-edge_service = Service('C:/Users/benysar/Downloads/edgedriver_win64/msedgedriver.exe')  # Replace with your Edge WebDriver path
+edge_service = Service("C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe")  
 driver = webdriver.Edge(service=edge_service, options=options)
 
 def extraire_liens_fichiers(url):
     driver.get(url)
+    print("Looking for data.gouv page")
     sleep(5)  # Wait for the page to load
     liens = []
     elements_lien = driver.find_elements(By.TAG_NAME, 'a')
