@@ -175,25 +175,34 @@ def create_verification_result(patient, date_naiss_iso, found, ipp=None, source=
     }
 
 def search_patient(nom_naiss, nom_usage, prenom, date_naiss_iso):
-    # First try to find the patient in the WarehousePatient model using the usage name
-    patient = search_warehousepatient(nom_usage, prenom, date_naiss_iso)
-    
-    # If not found in WarehousePatient, then try in INSEEPatient using the usage name
-    if not patient:
-        patient = search_inseepatient(nom_usage, prenom, date_naiss_iso)
+    # Try to find the patient in WarehousePatient first
+    warehouse_patient = WarehousePatient.objects.filter(
+        Q(LASTNAME__iexact=nom_usage) & Q(BIRTH_DATE=date_naiss_iso) & Q(FIRSTNAME__icontains=prenom)
+    ).first()
 
-    # If still not found and the birth name is different from the usage name, try INSEEPatient with the birth name
-    if not patient and nom_naiss != nom_usage:
-        patient = search_inseepatient(nom_naiss, prenom, date_naiss_iso)
+    if warehouse_patient:
+        return warehouse_patient
 
-    return patient
+    # If not found, try INSEEPatient using usage name
+    inseepatient = INSEEPatient.objects.filter(
+        Q(nom__iexact=nom_usage) & Q(prenom__icontains=prenom) & Q(date_naiss=date_naiss_iso)
+    ).first()
+
+    # If still not found and birth name differs from usage name, try INSEEPatient with birth name
+    if not inseepatient and nom_naiss != nom_usage:
+        inseepatient = INSEEPatient.objects.filter(
+            Q(nom__iexact=nom_naiss) & Q(prenom__icontains=prenom) & Q(date_naiss=date_naiss_iso)
+        ).first()
+
+    return inseepatient
 
 
 # Main function with batch processing
+
 def get_verification_results(df):
-    date_formats = ['%d/%m/%Y', '%Y-%m-%d'] 
+    date_formats = ['%d/%m/%Y', '%Y-%m-%d']
     verification_results = []
-    batch_size = 300  
+    batch_size = 300
 
     for start in range(0, len(df), batch_size):
         end = start + batch_size
@@ -201,13 +210,13 @@ def get_verification_results(df):
 
         for index, row in batch_df.iterrows():
             date_naiss_iso = parse_date(row['Date de naissance'], date_formats)
-       
             ipp = row['IPP']
             nom_usage = row['Nom']
-            nom_naiss = row.get('Nom de naissance','')
+            nom_naiss = row.get('Nom de naissance', '')
             prenom = row.get('Prénom', '')
-  
+
             patient = search_patient(nom_naiss, nom_usage, prenom, date_naiss_iso)
+
             if patient:
                 verification_result = create_verification_result(patient, date_naiss_iso, True, ipp=ipp)
             else:
