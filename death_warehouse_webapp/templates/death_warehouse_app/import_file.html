@@ -192,6 +192,13 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
+.modal-content .search-container {
+    margin-top: 20px; /* Espacement ajouté entre les boutons */
+}
+
+.modal-content .search-container button {
+    margin: 5px; /* Espacement entre les boutons */
+}
 
     </style>
 </head>
@@ -255,33 +262,21 @@
             document.getElementById('spinner').style.display = 'block';
         });
     </script>
-<script>
-    function showConfirmationModal() {
-        document.getElementById('confirmation-modal').style.display = 'flex';
-    }
 
-    function closeModal() {
-        document.getElementById('confirmation-modal').style.display = 'none';
-    }
-
-    function submitWithoutUpdate() {
-        closeModal();
-        // Soumet le formulaire sans mettre à jour les données
-        document.getElementById('confirmation-form').submit();
-    }
-</script>
 
 <div id="confirmation-modal" style="display: none;">
     <div class="modal-content">
         <div class="search-container">
-            <form method="post" action="{% url 'run_scripts' %}" id="confirmation-form">
-                {% csrf_token %}
-                <button type="submit" class="button">Mettre les données à jour.</button>
-            </form>
+            
             <p>La mise à jour la plus récente remonte à : <span id="recent-death-date"></span></p>
             <p>Voulez-vous vraiment effectuer la recherche sans mettre à jour les données ?</p>
-            <button type="button" onclick="submitWithoutUpdate()">Oui</button>
-            <button type="button" onclick="closeModal()">Non</button>
+            <button type="button" onclick="submitWithoutUpdate()">Rechercher sans mettre à jour</button>
+            <button type="button" onclick="closeModal()">Fermer</button>
+            <form method="post"  id="confirmation-form">
+                {% csrf_token %}
+                <button type="submit" class="button">Mettre les données à jour et effectuer la recherche.</button>
+            </form>
+            
             <!-- Affichage des messages de succès ou d'erreur -->
             {% if success_message %}
                 <p style="color: green;">{{ success_message }}</p>
@@ -294,6 +289,31 @@
 </div>
 
 <script>
+
+document.getElementById('confirmation-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Empêche la soumission par défaut pour le contrôle manuel
+
+        // Soumet le formulaire pour mettre à jour les données
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '{% url "run_scripts" %}', true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}'); // Assurez-vous d'ajuster selon votre contexte
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                console.log('Réponse reçue');
+                if (xhr.status === 200) {
+                    // Succès de la mise à jour, soumettre le formulaire de recherche
+                    document.getElementById('file-upload-form').submit();
+                } else {
+                    console.error('Erreur lors de la mise à jour des données : ' + xhr.status);
+                }
+            }
+        };
+        xhr.send();
+
+
+    });
+
     function showConfirmationModal() {
         // Requête AJAX pour récupérer la date de décès la plus récente
         var xhr = new XMLHttpRequest();
@@ -321,7 +341,7 @@
     function submitWithoutUpdate() {
         closeModal();
         // Soumet le formulaire sans mettre à jour les données
-        document.getElementById('confirmation-form').submit();
+        document.getElementById('file-upload-form').submit();
     }
 
     function closeModal() {

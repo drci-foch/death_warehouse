@@ -138,22 +138,7 @@
         <img src="https://upload.wikimedia.org/wikipedia/fr/d/d4/Logo_HOPITAL_FOCH.png" alt="Image d'accueil"
             width="250">
     </div>
-    <div class="search-container">
-        <!-- Formulaire et autres éléments de votre page -->
-        <form method="post" action="{% url 'run_scripts' %}">
-            {% csrf_token %}
-            <!-- Vos champs de formulaire et boutons ici -->
-            <button type="submit" class="button">Mettre les données à jour.</button>
-        </form>
-
-        <!-- Affichage des messages de succès ou d'erreur -->
-        {% if success_message %}
-            <p style="color: green;">{{ success_message }}</p>
-        {% endif %}
-        {% if error_message %}
-            <p style="color: red;">{{ error_message }}</p>
-        {% endif %}
-    </div>
+    
     <div class="search-container">
         <h2>Registre des personnes décédées : INSEE et Hôpital Foch</h2>
         <form method="post" action="{% url 'home' %}" id="search-form">

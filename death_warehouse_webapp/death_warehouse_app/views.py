@@ -76,18 +76,14 @@ def run_scripts(request):
             print(result3.stdout)
             print(result3.stderr)
             # Vérifier le code de retour
-            return redirect('home')
+            return HttpResponse('Scripts exécutés avec succès.')
 
         except Exception as e:
-            return render(request, 'death_warehouse_app/home.html', {
-                'error_message': f'Error: {e}'
-            })
+            return  HttpResponse(f'Une erreur s\'est produite : {str(e)}', status=500)
 
-    return render(request, 'death_warehouse_app/home.html')
+    return  HttpResponse('Method not allowed', status=405)
 
 
-    # Si la méthode HTTP n'est pas POST, retourner une réponse par défaut (peut être ajusté selon vos besoins)
-    return HttpResponse('Method not allowed', status=405)
 
 def format_date_for_display(date):
     if date:
@@ -164,14 +160,25 @@ def home(request):
 
 # --------------------------------------------------------------------------------- Import  
 
+
 def import_data_from_file(file):
     if file.name.endswith('.csv'):
-        df = pd.read_csv(file)
+        try:
+            df = pd.read_csv(file)
+
+            return df
+        except Exception as e:
+
+            raise ValueError("Erreur lors de la lecture du fichier CSV")
     elif file.name.endswith(('.xls', '.xlsx')):
-        df = pd.read_excel(file, engine='openpyxl')
+        try:
+            df = pd.read_excel(file, engine='openpyxl')
+            return df
+        except Exception as e:
+
+            raise ValueError("Erreur lors de la lecture du fichier Excel")
     else:
-        raise ValueError("Unsupported file format")
-    return df
+        raise ValueError("Format de fichier non pris en charge")
 
 
 def try_parse_date(date_str, formats):
@@ -350,13 +357,19 @@ def get_files_in_folder(request):
 
 def import_file(request):
 
+    
     if request.method == 'POST':
         form = ImportFileForm(request.POST, request.FILES)
+
         if form.is_valid():
+
             file = form.cleaned_data['file']
             try:
+
                 df = import_data_from_file(file)
+
                 verification_results = get_verification_results(df)
+
                 request.session['verification_results'] = verification_results
                 return render(request, 'death_warehouse_app/verification_results.html', {'results': verification_results})
             except ValueError:
