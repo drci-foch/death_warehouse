@@ -2,21 +2,18 @@ import csv
 import logging
 import os
 from datetime import datetime
+from pathlib import Path
 
 import django
-from django.db import DatabaseError, connections
+from death_warehouse_app.models import INSEEPatient
 
 # Setup Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "death_warehouse_webapp.settings")
 django.setup()
 logger = logging.getLogger(__name__)
 
-from death_warehouse_app.models import INSEEPatient, WarehousePatient
-
 
 def bulk_import_data_from_csv(file_path, batch_size=1000):
-    # INSEEPatient.objects.all().delete()
-
     with open(file_path, encoding="latin-1", errors="ignore") as csvfile:
         reader = csv.DictReader(csvfile)
         objects_list = []
@@ -76,61 +73,13 @@ def bulk_import_data_from_csv(file_path, batch_size=1000):
             INSEEPatient.objects.bulk_create(objects_list, ignore_conflicts=True)
 
 
-def import_data_from_db():
-    try:
-        with connections["my_oracle"].cursor() as cursor:
-            cursor.execute("""
-                SELECT
-                    p.PATIENT_NUM,
-                    p.LASTNAME,
-                    p.FIRSTNAME,
-                    p.BIRTH_DATE,
-                    p.SEX,
-                    p.EMAIL,
-                    p.MAIDEN_NAME,
-                    p.DEATH_DATE,
-                    p.BIRTH_COUNTRY,
-                    MAX(i.HOSPITAL_PATIENT_ID) AS HOSPITAL_PATIENT_ID
-                FROM DWH.DWH_PATIENT p
-                JOIN DWH.DWH_PATIENT_IPPHIST i ON p.PATIENT_NUM = i.PATIENT_NUM
-                WHERE p.DEATH_DATE IS NOT NULL
-                GROUP BY p.PATIENT_NUM, p.LASTNAME, p.FIRSTNAME, p.BIRTH_DATE, p.SEX, p.EMAIL, p.MAIDEN_NAME, p.DEATH_DATE, p.BIRTH_COUNTRY
-            """)
-            data = cursor.fetchall()
-            objects_list = []
-
-            for row in data:
-                instance = WarehousePatient(
-                    PATIENT_NUM=row[0],
-                    LASTNAME=row[1],
-                    FIRSTNAME=row[2],
-                    BIRTH_DATE=row[3],
-                    SEX=row[4],
-                    MAIL=row[5],
-                    MAIDEN_NAME=row[6],
-                    DEATH_DATE=row[7],
-                    BIRTH_COUNTRY=row[8],
-                    HOSPITAL_PATIENT_ID=row[9],
-                )
-                objects_list.append(instance)
-
-            # Bulk create or update
-            WarehousePatient.objects.bulk_create(objects_list, ignore_conflicts=True)
-
-        logger.info("Data imported successfully from database.")
-    except DatabaseError as e:
-        logger.error(f"Database error occurred: {e}")
-
-
 if __name__ == "__main__":
     try:
         date_du_jour = datetime.now().strftime("%d%m%Y")
-        file_path = os.path.abspath(f"../deces_insee/deces_global_maj_{date_du_jour}.csv")
+        file_path = Path(f"../deces_insee/deces_global_maj_{date_du_jour}.csv").resolve()
         bulk_import_data_from_csv(file_path)
         print("CSV Data import completed successfully.")
 
-        # import_data_from_db()
-        # print("SQL Data import completed successfully.")
     except FileNotFoundError as e:
         print(f"File not found: {e}")
     except Exception as e:

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from time import sleep
 
 from selenium import webdriver
@@ -15,14 +15,14 @@ site_url = "https://www.data.gouv.fr/fr/datasets/fichier-des-personnes-decedees/
 dossier_local = "../.././deces_insee/"
 
 # Create the local directory if it does not exist
-if not os.path.exists(dossier_local):
-    os.makedirs(dossier_local)
+if not Path.exists(dossier_local):
+    Path.mkdir(dossier_local, parents=True)
 
 # Configure Edge for Selenium with automatic download settings
 options = Options()
 options.use_chromium = True
 prefs = {
-    "download.default_directory": os.path.abspath(dossier_local),
+    "download.default_directory": Path.resolve(dossier_local),
     "download.prompt_for_download": False,
     "download.directory_upgrade": True,
     "safebrowsing.enabled": True,
@@ -100,25 +100,22 @@ try:
             )
             if resource_elements:
                 for elem in resource_elements:
-                    try:
-                        print(f"Clicking on element: {elem.text}")
-                        elem.click()
-                        sleep(2)
-                        # Essayer à nouveau d'extraire les liens
-                        liens_fichiers = extraire_liens_fichiers(driver.current_url)
-                        if liens_fichiers:
-                            break
-                    except:
-                        continue
+                    print(f"Clicking on element: {elem.text}")
+                    elem.click()
+                    sleep(2)
+                    # Essayer à nouveau d'extraire les liens
+                    liens_fichiers = extraire_liens_fichiers(driver.current_url)
+                    if liens_fichiers:
+                        break
         except Exception as e:
             print(f"Alternative approach failed: {e}")
 
     print(f"Total links found: {len(liens_fichiers)}")
     for lien in liens_fichiers:
-        nom_fichier = os.path.basename(lien)
+        nom_fichier = Path.name(lien)
         if nom_fichier.startswith("deces"):
-            chemin_local = os.path.join(dossier_local, nom_fichier)
-            if not os.path.exists(chemin_local):
+            chemin_local = Path(dossier_local) / nom_fichier
+            if not Path.exists(chemin_local):
                 print(f"Téléchargement de {nom_fichier}...")
                 driver.get(lien)  # Navigate to each download link
                 sleep(3)  # Wait longer to ensure download starts

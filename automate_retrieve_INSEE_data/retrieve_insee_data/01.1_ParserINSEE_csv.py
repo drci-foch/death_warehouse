@@ -1,6 +1,6 @@
 import csv
-import os
 from datetime import datetime
+from pathlib import Path
 
 
 # Function to convert date format from YYYYMMDD to YYYY/MM/DD
@@ -53,7 +53,7 @@ def process_files_in_batches(file_list, batch_size):
 def process_batch(batch_files, batch_index):
     donnees_globales = []
     for fichier in batch_files:
-        chemin_fichier = os.path.join(dossier, fichier)
+        chemin_fichier = Path(dossier) / fichier
         print(f"Processing file: {chemin_fichier}")
         with open(chemin_fichier, newline="", encoding="utf-8") as csvfile:
             reader = csv.DictReader(csvfile, delimiter=";")
@@ -78,7 +78,7 @@ def process_batch(batch_files, batch_index):
 
 
 # Get list of CSV files
-csv_files = [f for f in os.listdir(dossier) if f.endswith(".csv")]
+csv_files = [f for f in Path.iterdir(dossier) if f.endswith(".csv")]
 
 # Process files in batches
 process_files_in_batches(csv_files, batch_size)

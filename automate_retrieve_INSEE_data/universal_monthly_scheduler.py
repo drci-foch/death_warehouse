@@ -21,6 +21,7 @@ import subprocess
 import sys
 import time
 import traceback
+from pathlib import Path
 
 # Configuration
 SCRIPTS_TO_RUN = [
@@ -30,21 +31,21 @@ SCRIPTS_TO_RUN = [
 ]
 
 # Répertoire de base (dossier contenant ce script)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LOG_DIR = os.path.join(BASE_DIR, "logs")
-PID_FILE = os.path.join(BASE_DIR, "scheduler.pid")
-STOP_FILE = os.path.join(BASE_DIR, "stop_scheduler")
+BASE_DIR = Path.parent(Path.resolve(__file__))
+LOG_DIR = Path(BASE_DIR) / "logs"
+PID_FILE = Path(BASE_DIR) / "scheduler.pid"
+STOP_FILE = Path(BASE_DIR) / "stop_scheduler"
 
 # Créer le dossier de logs s'il n'existe pas
-if not os.path.exists(LOG_DIR):
-    os.makedirs(LOG_DIR)
+if not Path.exists(LOG_DIR):
+    Path.mkdir(LOG_DIR, parents=True)
 
 # Configurer la journalisation
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler(os.path.join(LOG_DIR, "scheduler.log")),
+        logging.FileHandler(Path(LOG_DIR) / "scheduler.log"),
         logging.StreamHandler(),
     ],
 )
@@ -52,9 +53,9 @@ logging.basicConfig(
 
 def run_script(script_path):
     """Exécute un script Python et journalise le résultat"""
-    full_path = os.path.join(BASE_DIR, script_path)
+    full_path = Path(BASE_DIR) / script_path
 
-    if not os.path.exists(full_path):
+    if not Path.exists(full_path):
         logging.error(f"Le script {full_path} n'existe pas.")
         return False
 
@@ -117,8 +118,8 @@ def write_pid_file():
 
 def remove_pid_file():
     """Supprime le fichier PID lors de la sortie"""
-    if os.path.exists(PID_FILE):
-        os.remove(PID_FILE)
+    if Path.exists(PID_FILE):
+        Path.unlink(PID_FILE)
 
 
 def run_monthly_tasks():
@@ -173,15 +174,15 @@ def daemonize():
 
     with open(os.devnull) as f:
         os.dup2(f.fileno(), sys.stdin.fileno())
-    with open(os.path.join(LOG_DIR, "stdout.log"), "a+") as f:
+    with open(Path(LOG_DIR) / "stdout.log", "a+") as f:
         os.dup2(f.fileno(), sys.stdout.fileno())
-    with open(os.path.join(LOG_DIR, "stderr.log"), "a+") as f:
+    with open(Path(LOG_DIR) / "stderr.log", "a+") as f:
         os.dup2(f.fileno(), sys.stderr.fileno())
 
 
-def check_already_running():
+def check_already_running() -> bool:
     """Vérifie si le script est déjà en cours d'exécution"""
-    if os.path.exists(PID_FILE):
+    if Path.exists(PID_FILE):
         with open(PID_FILE) as f:
             old_pid = f.read().strip()
 
@@ -199,7 +200,7 @@ def check_already_running():
                 return True
         except (OSError, subprocess.SubprocessError):
             # Le processus n'existe plus
-            os.remove(PID_FILE)
+            Path.unlink(PID_FILE)
 
     return False
 
@@ -228,9 +229,9 @@ def main():
     try:
         while True:
             # Vérifier si le fichier d'arrêt existe
-            if os.path.exists(STOP_FILE):
+            if Path.exists(STOP_FILE):
                 logging.info("Fichier d'arrêt détecté, arrêt du planificateur...")
-                os.remove(STOP_FILE)
+                Path.unlink(STOP_FILE)
                 break
 
             # Exécuter les tâches si c'est le premier jour du mois après 2h du matin
@@ -247,9 +248,9 @@ def main():
                     time.sleep(min(300, sleep_time))  # 5 minutes ou moins
                     sleep_time -= 300
 
-                    if os.path.exists(STOP_FILE):
+                    if Path.exists(STOP_FILE):
                         logging.info("Fichier d'arrêt détecté, arrêt du planificateur...")
-                        os.remove(STOP_FILE)
+                        Path.unlink(STOP_FILE)
                         return
             else:
                 # Calculer le temps jusqu'à la prochaine exécution
@@ -261,9 +262,9 @@ def main():
                     time.sleep(min(300, sleep_time))  # 5 minutes ou moins
                     sleep_time -= 300
 
-                    if os.path.exists(STOP_FILE):
+                    if Path.exists(STOP_FILE):
                         logging.info("Fichier d'arrêt détecté, arrêt du planificateur...")
-                        os.remove(STOP_FILE)
+                        Path.unlink(STOP_FILE)
                         return
 
     except KeyboardInterrupt:

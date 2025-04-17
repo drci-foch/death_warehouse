@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -56,7 +55,7 @@ ROOT_URLCONF = "death_warehouse_webapp.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "DIRS": [Path(BASE_DIR) / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -135,11 +134,11 @@ USE_TZ = False
 STATIC_URL = "/static/"
 
 # Spécifie le répertoire racine pour les fichiers statiques
-STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
+STATIC_ROOT = Path(BASE_DIR) / "static_root"
 
 # Spécifie l'emplacement des fichiers statiques de l'application
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
+    Path(BASE_DIR) / "static",
 ]
 
 

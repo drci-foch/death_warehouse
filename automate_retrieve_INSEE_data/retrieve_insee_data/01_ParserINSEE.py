@@ -1,6 +1,6 @@
 import csv
-import os
 from datetime import datetime
+from pathlib import Path
 
 characters = "/"
 dossier = "../.././deces_insee/"
@@ -50,9 +50,9 @@ def extraire_informations(ligne):
 
 
 # Parcourir les fichiers dans le dossier
-for fichier in os.listdir(dossier):
+for fichier in Path.iterdir(dossier):
     if fichier.endswith(".txt"):
-        chemin_fichier = os.path.join(dossier, fichier)
+        chemin_fichier = Path(dossier) / fichier
 
         with open(chemin_fichier, encoding="latin-1") as f:
             lignes = f.readlines()

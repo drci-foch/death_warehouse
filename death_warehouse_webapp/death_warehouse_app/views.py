@@ -118,13 +118,14 @@ def home(request):
 # --------------------------------------------------------------------------------- Import
 
 
-def import_data_from_file(file):
+def import_data_from_file(file) -> pd.DataFrame:
     if file.name.endswith(".csv"):
         df = pd.read_csv(file)
     elif file.name.endswith((".xls", ".xlsx")):
         df = pd.read_excel(file, engine="openpyxl")
     else:
         raise ValueError("Format de fichier non pris en charge")
+    return df
 
 
 def try_parse_date(date_str, formats):
@@ -141,9 +142,9 @@ def try_parse_date(date_str, formats):
 
 
 def parse_date(date_value, date_formats):
-    if not date_value or not isinstance(date_value, (str, pd.Timestamp, datetime)):
+    if not date_value or not isinstance(date_value, str | pd.Timestamp | datetime):
         return None
-    if isinstance(date_value, (pd.Timestamp, datetime)):
+    if isinstance(date_value, pd.Timestamp | datetime):
         date_value = date_value.strftime("%Y-%m-%d")
     return try_parse_date(date_value, date_formats)
 
@@ -242,7 +243,7 @@ def get_verification_results(df):
         end = start + batch_size
         batch_df = df[start:end]
 
-        for index, row in batch_df.iterrows():
+        for _, row in batch_df.iterrows():
             date_naiss_iso = parse_date(row["Date de naissance"], date_formats)
             ipp = row["IPP"]
             nom_usage = row["Nom"]
@@ -357,18 +358,18 @@ def get_emails_for_ipps(verification_results):
         ipp_list = ",".join([f"'{ipp}'" for ipp in batch])
 
         sql_query = f"""
-        SELECT 
+        SELECT
             ipph.HOSPITAL_PATIENT_ID AS "IPP",
             p.EMAIL AS "Mail",
             p.RESIDENCE_ADDRESS as "Adresse",
             p.ZIP_CODE as "ZIP",
             p.RESIDENCE_CITY as "Ville",
             p.RESIDENCE_COUNTRY as "Pays"
-        FROM 
+        FROM
             DWH.DWH_PATIENT p
-        LEFT JOIN 
+        LEFT JOIN
             DWH.DWH_PATIENT_IPPHIST ipph ON p.PATIENT_NUM = ipph.PATIENT_NUM
-        WHERE 
+        WHERE
             ipph.HOSPITAL_PATIENT_ID IN ({ipp_list})
         """
         print(sql_query)
@@ -384,7 +385,6 @@ def get_emails_for_ipps(verification_results):
 
 def export_results_csv(request):
     verification_results = request.session.get("verification_results")
-    # email_data = get_emails_for_ipps(verification_results)  # Get email data
 
     if verification_results is not None:
         # Log the CSV export action
@@ -418,13 +418,6 @@ def export_results_csv(request):
 
             ipp = str(result["patient_details"]["ipp"])
 
-            # Find the email associated with the IPP
-            # email = next((item.get('Mail', '') for item in email_data if item.get('IPP') == ipp), '')
-            # adress = next((item.get('Adresse', '') for item in email_data if item.get('IPP') == ipp), '')
-            # code = next((item.get('ZIP', '') for item in email_data if item.get('IPP') == ipp), '')
-            # ville = next((item.get('Ville', '') for item in email_data if item.get('IPP') == ipp), '')
-            # pays = next((item.get('Pays', '') for item in email_data if item.get('IPP') == ipp), '')
-
             writer.writerow(
                 [
                     result["patient_exists"],
@@ -433,11 +426,6 @@ def export_results_csv(request):
                     result["patient_details"]["prenom"],
                     formatted_date_naiss,
                     formatted_date_deces,
-                    # email,
-                    # adress,
-                    # code,
-                    # ville,
-                    # pays
                 ]
             )
 
