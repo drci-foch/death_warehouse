@@ -1,26 +1,19 @@
-from audioop import reverse
-import os
-import re
-from unittest import loader
-from django.shortcuts import redirect
-import subprocess
-from django.shortcuts import render
-from django.db.models import Count
-from django.db.models.functions import TruncDay, TruncMonth
-from .models import INSEEPatient, WarehousePatient, UserActionLog
-from django.contrib.admin.views.decorators import staff_member_required
-from .forms import INSEEPatientForm, ImportFileForm
-from datetime import datetime
-from .log_utils import log_user_action
-import pandas as pd
-from django.http import HttpResponse
 import csv
+from datetime import datetime
+
 import openpyxl
-from django.db.models import Q
-from .utils import fetch_merged_data
-from django.shortcuts import render
+import pandas as pd
+from django.contrib.admin.views.decorators import staff_member_required
 from django.db import connections
-import cx_Oracle
+from django.db.models import Count, Q
+from django.db.models.functions import TruncDay, TruncMonth
+from django.http import HttpResponse
+from django.shortcuts import render
+
+from .forms import ImportFileForm, INSEEPatientForm
+from .log_utils import log_user_action
+from .models import INSEEPatient, UserActionLog, WarehousePatient
+from .utils import fetch_merged_data
 
 # --------------------------------------------------------------------------------- Search home part
 
@@ -36,9 +29,7 @@ def get_patients_data(nom, prenom, date_naiss_iso):
     Retrieve patients data from INSEEPatient and WarehousePatient models based on given parameters.
     """
 
-    inseepatients = INSEEPatient.objects.filter(
-        nom__iexact=nom, prenom__icontains=prenom, date_naiss=date_naiss_iso
-    )
+    inseepatients = INSEEPatient.objects.filter(nom__iexact=nom, prenom__icontains=prenom, date_naiss=date_naiss_iso)
     warehousepatients = WarehousePatient.objects.filter(
         LASTNAME__iexact=nom, FIRSTNAME__icontains=prenom, BIRTH_DATE=date_naiss_iso
     )
@@ -95,11 +86,7 @@ def handle_post_request(request):
 
 def home(request):
     # Get the most recent death date from INSEEPatient model
-    latest_death_date = (
-        INSEEPatient.objects.order_by("-date_deces")
-        .values_list("date_deces", flat=True)
-        .first()
-    )
+    latest_death_date = INSEEPatient.objects.order_by("-date_deces").values_list("date_deces", flat=True).first()
 
     if request.method == "POST":
         patients, message, form = handle_post_request(request)
@@ -175,17 +162,12 @@ def patient_data_view(request):
 # Improved database query
 def search_inseepatient(nom, prenom, date_naiss_iso):
     return INSEEPatient.objects.filter(
-        Q(nom__iexact=nom)
-        & (Q(prenom__icontains=prenom) & Q(date_naiss=date_naiss_iso))
+        Q(nom__iexact=nom) & (Q(prenom__icontains=prenom) & Q(date_naiss=date_naiss_iso))
     ).first()
 
 
 def search_warehousepatient(nom, prenom, date_naiss_iso):
-    warehouse_patients_query = (
-        Q(LASTNAME__iexact=nom)
-        & Q(BIRTH_DATE=date_naiss_iso)
-        & Q(FIRSTNAME__icontains=prenom)
-    )
+    warehouse_patients_query = Q(LASTNAME__iexact=nom) & Q(BIRTH_DATE=date_naiss_iso) & Q(FIRSTNAME__icontains=prenom)
     return WarehousePatient.objects.filter(warehouse_patients_query).first()
 
 
@@ -197,9 +179,7 @@ def create_verification_result(patient, date_naiss_iso, found, ipp=None, source=
                 "nom": patient.nom,
                 "prenom": patient.prenom,
                 "date_naiss": patient.date_naiss.strftime("%Y-%m-%d"),
-                "date_deces": patient.date_deces.strftime("%Y-%m-%d")
-                if patient.date_deces
-                else "",
+                "date_deces": patient.date_deces.strftime("%Y-%m-%d") if patient.date_deces else "",
             }
             source = "INSEE"
         elif isinstance(patient, WarehousePatient):
@@ -209,9 +189,7 @@ def create_verification_result(patient, date_naiss_iso, found, ipp=None, source=
                 "prenom": patient.FIRSTNAME,
                 "mail": patient.MAIL,
                 "date_naiss": patient.BIRTH_DATE.strftime("%Y-%m-%d"),
-                "date_deces": patient.DEATH_DATE.strftime("%Y-%m-%d")
-                if patient.DEATH_DATE
-                else "",
+                "date_deces": patient.DEATH_DATE.strftime("%Y-%m-%d") if patient.DEATH_DATE else "",
             }
             source = "Warehouse"
     else:
@@ -232,9 +210,7 @@ def create_verification_result(patient, date_naiss_iso, found, ipp=None, source=
 def search_patient(nom_naiss, nom_usage, prenom, date_naiss_iso):
     # Try to find the patient in WarehousePatient first
     warehouse_patient = WarehousePatient.objects.filter(
-        Q(LASTNAME__iexact=nom_usage)
-        & Q(BIRTH_DATE=date_naiss_iso)
-        & Q(FIRSTNAME__icontains=prenom)
+        Q(LASTNAME__iexact=nom_usage) & Q(BIRTH_DATE=date_naiss_iso) & Q(FIRSTNAME__icontains=prenom)
     ).first()
 
     if warehouse_patient:
@@ -242,17 +218,13 @@ def search_patient(nom_naiss, nom_usage, prenom, date_naiss_iso):
 
     # If not found, try INSEEPatient using usage name
     inseepatient = INSEEPatient.objects.filter(
-        Q(nom__iexact=nom_usage)
-        & Q(prenom__icontains=prenom)
-        & Q(date_naiss=date_naiss_iso)
+        Q(nom__iexact=nom_usage) & Q(prenom__icontains=prenom) & Q(date_naiss=date_naiss_iso)
     ).first()
 
     # If still not found and birth name differs from usage name, try INSEEPatient with birth name
     if not inseepatient and nom_naiss != nom_usage:
         inseepatient = INSEEPatient.objects.filter(
-            Q(nom__iexact=nom_naiss)
-            & Q(prenom__icontains=prenom)
-            & Q(date_naiss=date_naiss_iso)
+            Q(nom__iexact=nom_naiss) & Q(prenom__icontains=prenom) & Q(date_naiss=date_naiss_iso)
         ).first()
 
     return inseepatient
@@ -280,13 +252,9 @@ def get_verification_results(df):
             patient = search_patient(nom_naiss, nom_usage, prenom, date_naiss_iso)
 
             if patient:
-                verification_result = create_verification_result(
-                    patient, date_naiss_iso, True, ipp=ipp
-                )
+                verification_result = create_verification_result(patient, date_naiss_iso, True, ipp=ipp)
             else:
-                verification_result = create_verification_result(
-                    row, date_naiss_iso, False, ipp=ipp
-                )
+                verification_result = create_verification_result(row, date_naiss_iso, False, ipp=ipp)
 
             verification_results.append(verification_result)
 
@@ -323,9 +291,7 @@ def import_file(request):
             except ValueError:
                 return render(request, "death_warehouse_app/import_error.html")
             except KeyError as e:
-                return render(
-                    request, "friendly_error_page.html", {"error_message": str(e)}
-                )
+                return render(request, "friendly_error_page.html", {"error_message": str(e)})
     else:
         form = ImportFileForm()
 
@@ -407,9 +373,7 @@ def get_emails_for_ipps(verification_results):
         """
         print(sql_query)
         # Execute the query for the batch and append the results
-        batch_results = execute_sql_query(
-            sql_query
-        )  # This function should return a dictionary {IPP: email}
+        batch_results = execute_sql_query(sql_query)  # This function should return a dictionary {IPP: email}
         email_data.extend(batch_results)
 
     return email_data
@@ -428,12 +392,8 @@ def export_results_csv(request):
         log_user_action(request, "export_csv", log_details)
 
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = (
-            'attachment; filename="recherche_fichiers_deces.csv"'
-        )
-        response.write(
-            "\ufeff".encode("utf8")
-        )  # BOM (optional; for Excel compatibility)
+        response["Content-Disposition"] = 'attachment; filename="recherche_fichiers_deces.csv"'
+        response.write("\ufeff".encode())  # BOM (optional; for Excel compatibility)
 
         writer = csv.writer(response)
         writer.writerow(
@@ -496,9 +456,7 @@ def export_results_xlsx(request):
         log_user_action(request, "export_xlsx", log_details)
 
         response = HttpResponse(content_type="application/ms-excel")
-        response["Content-Disposition"] = (
-            'attachment; filename="recherche_fichiers_deces.xlsx"'
-        )
+        response["Content-Disposition"] = 'attachment; filename="recherche_fichiers_deces.xlsx"'
 
         workbook = openpyxl.Workbook()
         worksheet = workbook.active
@@ -545,14 +503,11 @@ def log_stats(request):
     """View to display statistics about user actions"""
 
     # Get action counts
-    action_counts = (
-        UserActionLog.objects.values("action")
-        .annotate(count=Count("action"))
-        .order_by("-count")
-    )
+    action_counts = UserActionLog.objects.values("action").annotate(count=Count("action")).order_by("-count")
 
     # Get daily stats for the past 30 days
     from datetime import timedelta
+
     from django.utils import timezone
 
     thirty_days_ago = timezone.now() - timedelta(days=30)

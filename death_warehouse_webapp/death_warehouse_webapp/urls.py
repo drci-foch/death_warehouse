@@ -15,16 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin
-from django.urls import path
 from death_warehouse_app.views import (
-    home,
-    import_file,
     export_results_csv,
     export_results_xlsx,
-    patient_data_view,
+    home,
+    import_file,
     log_stats,
+    patient_data_view,
 )
+from django.contrib import admin
+from django.urls import path
 
 urlpatterns = [
     path("", home, name="home"),

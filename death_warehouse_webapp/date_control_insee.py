@@ -1,11 +1,12 @@
 import os
+
 import django
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "death_warehouse_webapp.settings")
 django.setup()
 
-from django.db import models
 from death_warehouse_app.models import INSEEPatient
+from django.db import models
 
 
 def delete_invalid_records():

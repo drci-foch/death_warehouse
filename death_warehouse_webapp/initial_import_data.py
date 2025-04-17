@@ -1,10 +1,10 @@
-import os
-import django
 import csv
-from datetime import datetime
-from django.db import connections, DatabaseError
-from django.db import transaction
 import logging
+import os
+from datetime import datetime
+
+import django
+from django.db import DatabaseError, connections, transaction
 
 # Setup Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "death_warehouse_webapp.settings")
@@ -24,7 +24,7 @@ def import_data_from_csv(file_path):
     patients_to_create = []
 
     with open(
-        file_path, "r", encoding="latin-1", errors="ignore"
+        file_path, encoding="latin-1", errors="ignore"
     ) as csvfile:  # Try 'latin-1', 'ISO-8859-1', or 'Windows-1252'
         reader = csv.DictReader(csvfile)
 
@@ -43,18 +43,14 @@ def import_data_from_csv(file_path):
                     date_naiss = datetime.strptime(date_naiss, "%Y/%m/%d").date()
                 except ValueError:
                     date_naiss = None
-                    print(
-                        f"Invalid date format for date of birth: {row.get('Date de naissance')}"
-                    )
+                    print(f"Invalid date format for date of birth: {row.get('Date de naissance')}")
 
             if date_deces:
                 try:
                     date_deces = datetime.strptime(date_deces, "%Y/%m/%d").date()
                 except ValueError:
                     date_deces = None
-                    print(
-                        f"Invalid date format for death date: {row.get('Date de deces')}"
-                    )
+                    print(f"Invalid date format for death date: {row.get('Date de deces')}")
 
             # Create INSEEPatient instance (not saved to database yet)
             patients_to_create.append(
@@ -130,9 +126,7 @@ def import_data_from_db():
 if __name__ == "__main__":
     try:
         date_du_jour = datetime.now().strftime("%d%m%Y")
-        file_path = os.path.abspath(
-            f"../deces_insee/deces_global_maj_{date_du_jour}.csv"
-        )
+        file_path = os.path.abspath(f"../deces_insee/deces_global_maj_{date_du_jour}.csv")
         import_data_from_csv(file_path)
         print("CSV Data import completed successfully.")
 

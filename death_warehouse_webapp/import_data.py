@@ -1,10 +1,10 @@
-import os
-import django
 import csv
-from datetime import datetime
-from django.db import connections, DatabaseError
 import logging
-from django.core.exceptions import MultipleObjectsReturned
+import os
+from datetime import datetime
+
+import django
+from django.db import DatabaseError, connections
 
 # Setup Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "death_warehouse_webapp.settings")
@@ -17,7 +17,7 @@ from death_warehouse_app.models import INSEEPatient, WarehousePatient
 def bulk_import_data_from_csv(file_path, batch_size=1000):
     # INSEEPatient.objects.all().delete()
 
-    with open(file_path, "r", encoding="latin-1", errors="ignore") as csvfile:
+    with open(file_path, encoding="latin-1", errors="ignore") as csvfile:
         reader = csv.DictReader(csvfile)
         objects_list = []
         total_imported = 0  # Keep track of the total number of imported records
@@ -36,14 +36,10 @@ def bulk_import_data_from_csv(file_path, batch_size=1000):
                 try:
                     date_naiss = datetime.strptime(date_naiss, "%Y/%m/%d").date()
                 except ValueError:
-                    logger.warning(
-                        f"Invalid date_naiss format for {nom} {prenom}. Skipping record."
-                    )
+                    logger.warning(f"Invalid date_naiss format for {nom} {prenom}. Skipping record.")
                     continue
             else:
-                logger.warning(
-                    f"Missing date_naiss for {nom} {prenom}. Skipping record."
-                )
+                logger.warning(f"Missing date_naiss for {nom} {prenom}. Skipping record.")
                 continue
 
             if date_deces:
@@ -67,17 +63,13 @@ def bulk_import_data_from_csv(file_path, batch_size=1000):
             if len(objects_list) >= batch_size:
                 INSEEPatient.objects.bulk_create(objects_list, ignore_conflicts=True)
                 total_imported += len(objects_list)
-                print(
-                    f"Processed a batch of {len(objects_list)} records. Total processed: {total_imported}."
-                )
+                print(f"Processed a batch of {len(objects_list)} records. Total processed: {total_imported}.")
                 objects_list = []
 
         if objects_list:  # For the last batch which might be less than batch_size
             INSEEPatient.objects.bulk_create(objects_list, ignore_conflicts=True)
             total_imported += len(objects_list)
-            print(
-                f"Processed the final batch of {len(objects_list)} records. Total processed: {total_imported}."
-            )
+            print(f"Processed the final batch of {len(objects_list)} records. Total processed: {total_imported}.")
 
         # Insert any remaining objects
         if objects_list:
@@ -133,9 +125,7 @@ def import_data_from_db():
 if __name__ == "__main__":
     try:
         date_du_jour = datetime.now().strftime("%d%m%Y")
-        file_path = os.path.abspath(
-            f"../deces_insee/deces_global_maj_{date_du_jour}.csv"
-        )
+        file_path = os.path.abspath(f"../deces_insee/deces_global_maj_{date_du_jour}.csv")
         bulk_import_data_from_csv(file_path)
         print("CSV Data import completed successfully.")
 

@@ -1,5 +1,6 @@
 import logging
-from django.db import connections, DatabaseError
+
+from django.db import DatabaseError, connections
 
 logger = logging.getLogger(__name__)
 

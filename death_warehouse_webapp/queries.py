@@ -1,8 +1,9 @@
+import logging
 import os
+
 import django
 from django.db.models import Count
-from django.db.models.functions import ExtractYear, ExtractMonth
-import logging
+from django.db.models.functions import ExtractMonth, ExtractYear
 
 # Setup Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "death_warehouse_webapp.settings")
@@ -16,9 +17,7 @@ def count_deaths_by_year_month():
     try:
         # Annotate each record with its year and month of death
         queryset = (
-            INSEEPatient.objects.annotate(
-                year=ExtractYear("date_deces"), month=ExtractMonth("date_deces")
-            )
+            INSEEPatient.objects.annotate(year=ExtractYear("date_deces"), month=ExtractMonth("date_deces"))
             .values("year", "month")
             .annotate(
                 count=Count("id")  # Count the number of records in each group

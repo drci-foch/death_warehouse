@@ -1,7 +1,8 @@
-from django.db import models
-from django.core import exceptions
-from dateutil.parser import parse as parse_date
 from datetime import datetime
+
+from dateutil.parser import parse as parse_date
+from django.core import exceptions
+from django.db import models
 from django.utils import timezone
 
 
@@ -44,9 +45,7 @@ class INSEEPatient(models.Model):
     pays_naiss = models.CharField(max_length=100, blank=True)
     lieu_naiss = models.CharField(max_length=100, blank=True)
     code_naiss = models.CharField(max_length=10, blank=True)
-    date_deces = CustomDateField(
-        validators=[], blank=True, null=True, default="1970-01-01"
-    )
+    date_deces = CustomDateField(validators=[], blank=True, null=True, default="1970-01-01")
 
 
 class WarehousePatient(models.Model):
@@ -76,9 +75,7 @@ class UserActionLog(models.Model):
     action = models.CharField(max_length=50, choices=ACTION_CHOICES)
     timestamp = models.DateTimeField(default=timezone.now)
     user_ip = models.GenericIPAddressField(null=True, blank=True)
-    details = models.JSONField(
-        blank=True, null=True
-    )  # For storing additional information
+    details = models.JSONField(blank=True, null=True)  # For storing additional information
 
     class Meta:
         ordering = ["-timestamp"]

@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import INSEEPatient, WarehousePatient
-from .models import UserActionLog
+
+from .models import INSEEPatient, UserActionLog, WarehousePatient
 
 
 @admin.register(INSEEPatient)
