@@ -17,11 +17,11 @@ This Django web application is designed to facilitate the updating of patient de
 - Search Engine: Users can search for specific patient records using criteria such as name, first name, and date of birth. 
 
 <p align="center">
-    <img src="./CaptureResumeResult.PNG" width="700">
+    <img src="./readme_images/CaptureResumeResult.PNG" width="700">
 </p>
 
 <p align="center">
-    <img src="./CaptureResultatRecherche.png" width="700">
+    <img src="./readme_images/CaptureResultatRecherche.png" width="700">
 </p>
 
 

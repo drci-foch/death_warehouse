@@ -127,23 +127,26 @@
     <div style="margin-bottom: 20px;"></div>
 
     <!-- Boutons -->
+
+    <h2>Informations sur l'exportation</h2>
+    <div class="instructions"
+        style="background: linear-gradient(to bottom, #0079C0, #93BE1E); color: #F9FCFF; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 800px; text-align: left;">
+        <h3 style="margin-bottom: 10px;">À propos du fichier exporté :</h3>
+        <ul style="list-style-type: disc; padding-left: 20px;">
+            <li>Le fichier exporté contiendra les informations suivantes : Source, IPP, Nom, Prénom, Date de naissance,
+                Date de décès.</li>
+            <li>Vous pouvez exporter au format CSV (.csv) ou Excel (.xlsx) selon vos besoins.</li>
+            <li>Pour les patients décédés, la source indiquera "INSEE".</li>
+            <li>Pour les patients non trouvés, la source indiquera "Non trouvé".</li>
+        </ul>
+    </div>
+
+
+
     <a href="{% url 'export_results_csv' %}" class="button">Exporter en CSV</a>
     <a href="{% url 'export_results_xlsx' %}" class="button">Exporter en Excel</a>
     <a href="{% url 'import_file' %}" class="button">Importer un autre fichier</a>
     <a href="{% url 'home' %}" class="button">Retour à l'accueil</a>
-
-    <div class="white-background">
-        <!-- Nouveau bloc blanc -->
-        <h2>Avertissement : </h2>
-        <ul class="bullet-list">
-            <li>Si un patient est référencé dans l'INSEE mais pas dans notre système, cela peut être dû à un délai de
-                mise à jour de nos fichiers. (ex. patient perdu de vue) </li>
-            <li>Notez qu'il peut y avoir un délai allant jusqu'à un mois pour la mise à jour des informations dans les
-                bases de données de l'INSEE. </li>
-            <li>La base de données de l'INSEE inclut également les informations sur les décès survenus à l'étranger.
-            </li>
-        </ul>
-
 
     </div>
 
@@ -153,7 +156,6 @@
             <canvas id="summaryChart"></canvas>
         </div>
     </div>
-
 
     <div class="container">
         <h2>Résultats de recherche des patients</h2>
@@ -229,7 +231,7 @@
                 window.summaryChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        
+
                         labels: ['Total', 'INSEE', 'Warehouse'],
                         datasets: [{
                             label: 'Nombre de Patients',

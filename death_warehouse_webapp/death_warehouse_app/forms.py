@@ -2,7 +2,7 @@ from django import forms
 
 
 class DateInput(forms.DateInput):
-    input_type = 'date'
+    input_type = "date"
 
 
 class INSEEPatientForm(forms.Form):
@@ -12,9 +12,9 @@ class INSEEPatientForm(forms.Form):
         required=True,
         label="Date de naissance",
         # Specify the attribute directly just to be sure
-        widget=DateInput(attrs={'type': 'date'})
+        widget=DateInput(attrs={"type": "date"}),
     )
 
 
 class ImportFileForm(forms.Form):
-    file = forms.FileField(label='Sélectionnez un fichier')
+    file = forms.FileField(label="Sélectionnez un fichier")

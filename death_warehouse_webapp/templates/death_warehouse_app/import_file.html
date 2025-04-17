@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -85,7 +86,8 @@
 
 
         .bottom-banner {
-            background: linear-gradient(to bottom,#0079C0,  #00487E ); /* Darker background */
+            background: linear-gradient(to bottom, #0079C0, #00487E);
+            /* Darker background */
             opacity: 0.8;
             color: #FFF;
             padding: 15px;
@@ -93,11 +95,14 @@
         }
 
 
-            #spinner {
-                display: none; /* Hidden by default */
-                text-align: center; /* Center the loader horizontally */
-                margin: 20px 0; /* Add some space above and below the spinner */
-            }
+        #spinner {
+            display: none;
+            /* Hidden by default */
+            text-align: center;
+            /* Center the loader horizontally */
+            margin: 20px 0;
+            /* Add some space above and below the spinner */
+        }
 
 
         .loader {
@@ -113,7 +118,8 @@
             width: 13px;
             height: 13px;
             border-radius: 50%;
-            background-color: #93BE1E; /* Change color if needed */
+            background-color: #93BE1E;
+            /* Change color if needed */
             animation-timing-function: cubic-bezier(0, 1, 1, 0);
         }
 
@@ -141,6 +147,7 @@
             0% {
                 transform: scale(0);
             }
+
             100% {
                 transform: scale(1);
             }
@@ -150,6 +157,7 @@
             0% {
                 transform: translate(0, 0);
             }
+
             100% {
                 transform: translate(24px, 0);
             }
@@ -159,6 +167,7 @@
             0% {
                 transform: scale(1);
             }
+
             100% {
                 transform: scale(0);
             }
@@ -202,9 +211,11 @@
 
     </style>
 </head>
+
 <body>
     <div class="banner">
-        <img src="https://upload.wikimedia.org/wikipedia/fr/d/d4/Logo_HOPITAL_FOCH.png" alt="Image d'accueil" width="250">
+        <img src="https://upload.wikimedia.org/wikipedia/fr/d/d4/Logo_HOPITAL_FOCH.png" alt="Image d'accueil"
+            width="250">
     </div>
     <div class="container">
         <h2>Choisissez un fichier à importer</h2>
@@ -213,11 +224,11 @@
             <div class="input-group">
                 {{ form.file }}
             </div>
-            <button type="button" class="button" onclick="showConfirmationModal()">Effectuer la recherche</button>
+            <button type="submit" class="button">Effectuer la recherche</button>
 
-            
         </form>
-        <div id="file-upload-feedback" style="display:none; margin-top:10px;">Fichier sélectionné : <span id="file-name"></span></div>
+        <div id="file-upload-feedback" style="display:none; margin-top:10px;">Fichier sélectionné : <span
+                id="file-name"></span></div>
 
         <div id="spinner" style="display:none;">
             <div class="loader">
@@ -230,18 +241,24 @@
     </div>
     <div class="instructions"
         style="background: linear-gradient(to bottom, #0079C0, #93BE1E); color: #F9FCFF; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 600px; text-align: left;">
-        <h3 style="margin-bottom: 10px;">Comment importer un fichier :</h3>
+        <h3 style="margin-bottom: 10px;">📁Comment importer un fichier :</h3>
         <ul style="list-style-type: disc; padding-left: 20px;">
-            <li>Choisissez un fichier au format Excel (.xlsx) ou CSV (.csv) à importer.</li>
-            <li>Assurez-vous que le fichier inclut au minimum les données suivantes : IPP, Nom, Nom de naissance, Prénom, et Date de naissance du patient. Il est important de vérifier que les noms des variables correspondent exactement à ceux mentionnés ci-dessus.</li>
-            <li>Assurez-vous que la date de naissance est au format jour/mois/année.</li>
-        </ul>
+            <li>📄 Formats acceptés : Excel (.xls, .xlsx) ou CSV (.csv)</li>
+            <li>📝 Le nom du fichier n'a pas d'importance</li>
+            <li>🔀 L’ordre des colonnes n’a pas d’importance</li>
+            <li>📆 Format de la date : JJ/MM/AAAA (ex : 25/12/1985)</li>
+            <li>📌 Colonnes obligatoires : IPP, Nom, Prénom, Date de naissance</li>
+            <li>✅ Recommandé : ajouter la colonne "Nom de naissance" (utile pour retrouver les femmes mariées)</li>
+            <li>⚠️ Respecter la casse des noms de colonnes (majuscules/minuscules)</li>
     </div>
+
+
+
     <a href="{% url 'home' %}" class="button">Retour à l'accueil</a>
 
 
     <script>
-        document.getElementById('{{ form.file.id_for_label }}').addEventListener('change', function(e) {
+        document.getElementById('{{ form.file.id_for_label }}').addEventListener('change', function (e) {
             var fileName = e.target.files[0].name;
             document.getElementById('file-name').textContent = fileName;
             document.getElementById('file-upload-feedback').style.display = 'block';
@@ -251,14 +268,14 @@
 
     <script>
         // Listener for file selection
-        document.getElementById('{{ form.file.id_for_label }}').addEventListener('change', function(e) {
+        document.getElementById('{{ form.file.id_for_label }}').addEventListener('change', function (e) {
             var fileName = e.target.files[0].name;
             document.getElementById('file-name').textContent = fileName;
             document.getElementById('file-upload-feedback').style.display = 'block';
         });
 
         // Listener for form submission
-        document.getElementById('file-upload-form').addEventListener('submit', function() {
+        document.getElementById('file-upload-form').addEventListener('submit', function () {
             document.getElementById('spinner').style.display = 'block';
         });
     </script>
@@ -352,4 +369,5 @@ document.getElementById('confirmation-form').addEventListener('submit', function
 
 
 </body>
+
 </html>

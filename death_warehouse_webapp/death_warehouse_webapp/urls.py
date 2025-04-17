@@ -14,18 +14,24 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path
-from death_warehouse_app.views import home, import_file, export_results_csv, export_results_xlsx, patient_data_view, run_scripts, latestdate, get_recent_death_date_from_database
+from death_warehouse_app.views import (
+    home,
+    import_file,
+    export_results_csv,
+    export_results_xlsx,
+    patient_data_view,
+    log_stats,
+)
 
 urlpatterns = [
-    path('', home, name='home'),
-    path('import/', import_file, name='import_file'),
-    path('export_results_csv/', export_results_csv, name='export_results_csv'),
-    path('export_results_xlsx/', export_results_xlsx, name='export_results_xlsx'),
-    path('test/', patient_data_view, name='test'),
-    path('admin/', admin.site.urls),
-    path('run-scripts/', run_scripts, name='run_scripts'),
-    path('import/', latestdate, name='latestdate'),
-    path('get_recent_death_date_from_database/', get_recent_death_date_from_database, name='get_recent_death_date_from_database'),
+    path("", home, name="home"),
+    path("import/", import_file, name="import_file"),
+    path("export_results_csv/", export_results_csv, name="export_results_csv"),
+    path("export_results_xlsx/", export_results_xlsx, name="export_results_xlsx"),
+    path("test/", patient_data_view, name="test"),
+    path("admin/", admin.site.urls),
+    path("stats/", log_stats, name="log_stats"),
 ]
