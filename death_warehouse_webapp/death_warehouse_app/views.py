@@ -1,3 +1,9 @@
+from audioop import reverse
+import os
+import re
+from unittest import loader
+from django.shortcuts import redirect
+import subprocess
 from django.shortcuts import render
 from .models import INSEEPatient, WarehousePatient
 from .forms import INSEEPatientForm, ImportFileForm
@@ -13,6 +19,71 @@ from django.db import connections
 import cx_Oracle
 
 # --------------------------------------------------------------------------------- Search home part 
+
+import subprocess
+import sys
+from django.http import HttpResponse
+
+
+def get_recent_death_date():
+    directory = './deces_insee'
+    latest_date = None
+
+    for filename in os.listdir(directory):
+        if filename.startswith("deces_global_maj_"):
+            try:
+                date_str = filename.split('_')[-1]
+                date_obj = datetime.strptime(date_str, '%d%m%Y')
+                if latest_date is None or date_obj > latest_date:
+                    latest_date = date_obj
+            except ValueError:
+                continue
+
+    return latest_date # Remplacez 'your_template.html' par le nom de votre template
+def latestdate(request):
+    recent_death_date = get_recent_death_date()
+    print(recent_death_date)
+    context = {
+        'recent_death_date': recent_death_date.strftime('%d/%m/%Y') if recent_death_date else 'Aucune date trouvée',
+    }
+    print(context)
+    
+    return render(request, 'import_file.html', context)  # Remplacez 'your_template.html' par le nom de votre template
+
+def run_scripts(request):
+    if request.method == 'POST':
+        try:
+            # Chemin vers l'interpréteur Python de Django
+            python_executable = sys.executable
+            
+            # Chemins absolus complets des scripts à exécuter
+            script1 = '../00_ApiRequest.py'
+            script2 = '../01_ParserINSEE.py'
+            script3 = '../death_warehouse_webapp/initial_import_data.py'
+
+            # Exécuter les scripts nécessaires
+            result1 = subprocess.run([python_executable, script1], capture_output=True, text=True)
+            result2 = subprocess.run([python_executable, script2], capture_output=True, text=True)
+            result3 = subprocess.run([python_executable, script3], capture_output=True, text=True)
+
+            # Afficher la sortie du script pour le débogage
+            print(result1.stdout)
+            print(result1.stderr)
+
+            print(result2.stdout)
+            print(result2.stderr)
+
+            print(result3.stdout)
+            print(result3.stderr)
+            # Vérifier le code de retour
+            return HttpResponse('Scripts exécutés avec succès.')
+
+        except Exception as e:
+            return  HttpResponse(f'Une erreur s\'est produite : {str(e)}', status=500)
+
+    return  HttpResponse('Method not allowed', status=405)
+
+
 
 def format_date_for_display(date):
     if date:
@@ -89,14 +160,25 @@ def home(request):
 
 # --------------------------------------------------------------------------------- Import  
 
+
 def import_data_from_file(file):
     if file.name.endswith('.csv'):
-        df = pd.read_csv(file)
+        try:
+            df = pd.read_csv(file)
+
+            return df
+        except Exception as e:
+
+            raise ValueError("Erreur lors de la lecture du fichier CSV")
     elif file.name.endswith(('.xls', '.xlsx')):
-        df = pd.read_excel(file, engine='openpyxl')
+        try:
+            df = pd.read_excel(file, engine='openpyxl')
+            return df
+        except Exception as e:
+
+            raise ValueError("Erreur lors de la lecture du fichier Excel")
     else:
-        raise ValueError("Unsupported file format")
-    return df
+        raise ValueError("Format de fichier non pris en charge")
 
 
 def try_parse_date(date_str, formats):
@@ -227,16 +309,76 @@ def get_verification_results(df):
     return verification_results
 
 # --------------------------------------------------------------------------------- Display results 
+# views.py
+import os
+import json
+from django.http import JsonResponse
+
+def get_recent_death_date_from_database(request):
+    try:
+        # Récupérer la date la plus récente depuis la base de données
+        most_recent_date = INSEEPatient.objects.latest('date_deces').date_deces.strftime('%d/%m/%Y')
+        return JsonResponse({'recent_death_date': most_recent_date})
+    except INSEEPatient.DoesNotExist:
+        return JsonResponse({'error': 'Aucune donnée trouvée dans la base de données.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+def get_files_in_folder(request):
+    try:
+        # Récupérer la date la plus récente depuis la base de données
+        most_recent_date = INSEEPatient.objects.latest('date_deces').date_deces.strftime('%d/%m/%Y')
+        return JsonResponse({'recent_death_date': most_recent_date})
+    except INSEEPatient.DoesNotExist:
+        return JsonResponse({'error': 'Aucune donnée trouvée dans la base de données.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+    folder_path = './deces_insee'  # Mettez le chemin absolu de votre dossier deces_insee ici
+    # Fonction pour extraire la date du nom de fichier
+    def extract_date_from_filename(filename):
+        # Regex pour extraire la date (ici, le motif suppose une date au format DDMMYYYY)
+        match = re.search(r'_([0-9]{2})([0-9]{2})([0-9]{4})', filename)
+        if match:
+            day = match.group(1)
+            month = match.group(2)
+            year = match.group(3)
+            return f"{day}/{month}/{year}"
+        return None
+
+    # Récupérer la liste des fichiers dans le dossier
+    if os.path.isdir(folder_path):
+        files = os.listdir(folder_path)
+        files_in_folder = [f for f in files if os.path.isfile(os.path.join(folder_path, f))]
+
+        # Filtrer le fichier commençant par deces_global_maj_
+        filtered_files = [f for f in files_in_folder if f.startswith('deces_global_maj_')]
+
+        # Extraire la date du premier fichier trouvé
+        if filtered_files:
+            first_file = filtered_files[0]
+            date_from_filename = extract_date_from_filename(first_file)
+        else:
+            date_from_filename = None
+
+        # Renvoyer la date au format JSON
+        return JsonResponse({'recent_death_date': date_from_filename})
+    else:
+        return JsonResponse({'error': 'Le dossier deces_insee n\'existe pas ou n\'est pas accessible.'}, status=400)
 
 def import_file(request):
 
+    
     if request.method == 'POST':
         form = ImportFileForm(request.POST, request.FILES)
+
         if form.is_valid():
+
             file = form.cleaned_data['file']
             try:
+
                 df = import_data_from_file(file)
+
                 verification_results = get_verification_results(df)
+
                 request.session['verification_results'] = verification_results
                 return render(request, 'death_warehouse_app/verification_results.html', {'results': verification_results})
             except ValueError:

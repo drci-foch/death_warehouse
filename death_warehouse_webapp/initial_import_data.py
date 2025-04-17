@@ -116,7 +116,7 @@ def import_data_from_db():
 if __name__ == "__main__":
     try:
         date_du_jour = datetime.now().strftime("%d%m%Y")
-        file_path = os.path.abspath(f"../deces_insee/deces_global_maj_{date_du_jour}.csv")
+        file_path = os.path.abspath(f"./deces_insee/deces_global_maj_{date_du_jour}.csv")
         import_data_from_csv(file_path)
         print("CSV Data import completed successfully.")
 

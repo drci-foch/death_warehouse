@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from death_warehouse_app.views import home, import_file, export_results_csv, export_results_xlsx, patient_data_view
+from death_warehouse_app.views import home, import_file, export_results_csv, export_results_xlsx, patient_data_view, run_scripts, latestdate, get_recent_death_date_from_database
 
 urlpatterns = [
     path('', home, name='home'),
@@ -25,4 +25,7 @@ urlpatterns = [
     path('export_results_xlsx/', export_results_xlsx, name='export_results_xlsx'),
     path('test/', patient_data_view, name='test'),
     path('admin/', admin.site.urls),
+    path('run-scripts/', run_scripts, name='run_scripts'),
+    path('import/', latestdate, name='latestdate'),
+    path('get_recent_death_date_from_database/', get_recent_death_date_from_database, name='get_recent_death_date_from_database'),
 ]
