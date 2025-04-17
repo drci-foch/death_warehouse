@@ -116,8 +116,6 @@ def home(request):
 
 
 # --------------------------------------------------------------------------------- Import
-
-
 def import_data_from_file(file) -> pd.DataFrame:
     if file.name.endswith(".csv"):
         df = pd.read_csv(file)
@@ -158,19 +156,11 @@ def patient_data_view(request):
 
 
 # --------------------------------------------------------------------------------- Searching part
-
-
 # Improved database query
 def search_inseepatient(nom, prenom, date_naiss_iso):
     return INSEEPatient.objects.filter(
         Q(nom__iexact=nom) & (Q(prenom__icontains=prenom) & Q(date_naiss=date_naiss_iso))
     ).first()
-
-
-def search_warehousepatient(nom, prenom, date_naiss_iso):
-    warehouse_patients_query = Q(LASTNAME__iexact=nom) & Q(BIRTH_DATE=date_naiss_iso) & Q(FIRSTNAME__icontains=prenom)
-    return WarehousePatient.objects.filter(warehouse_patients_query).first()
-
 
 def create_verification_result(patient, date_naiss_iso, found, ipp=None, source=None):
     if found:
@@ -183,16 +173,6 @@ def create_verification_result(patient, date_naiss_iso, found, ipp=None, source=
                 "date_deces": patient.date_deces.strftime("%Y-%m-%d") if patient.date_deces else "",
             }
             source = "INSEE"
-        elif isinstance(patient, WarehousePatient):
-            patient_details = {
-                "ipp": ipp,
-                "nom": patient.LASTNAME,
-                "prenom": patient.FIRSTNAME,
-                "mail": patient.MAIL,
-                "date_naiss": patient.BIRTH_DATE.strftime("%Y-%m-%d"),
-                "date_deces": patient.DEATH_DATE.strftime("%Y-%m-%d") if patient.DEATH_DATE else "",
-            }
-            source = "Warehouse"
     else:
         patient_details = {
             "ipp": ipp,
@@ -208,21 +188,11 @@ def create_verification_result(patient, date_naiss_iso, found, ipp=None, source=
     }
 
 
-def search_patient(nom_naiss, nom_usage, prenom, date_naiss_iso):
-    # Try to find the patient in WarehousePatient first
-    warehouse_patient = WarehousePatient.objects.filter(
-        Q(LASTNAME__iexact=nom_usage) & Q(BIRTH_DATE=date_naiss_iso) & Q(FIRSTNAME__icontains=prenom)
-    ).first()
-
-    if warehouse_patient:
-        return warehouse_patient
-
-    # If not found, try INSEEPatient using usage name
+def search_patient(nom_naiss, nom_usage, prenom, date_naiss_iso) -> INSEEPatient | None:
     inseepatient = INSEEPatient.objects.filter(
         Q(nom__iexact=nom_usage) & Q(prenom__icontains=prenom) & Q(date_naiss=date_naiss_iso)
     ).first()
 
-    # If still not found and birth name differs from usage name, try INSEEPatient with birth name
     if not inseepatient and nom_naiss != nom_usage:
         inseepatient = INSEEPatient.objects.filter(
             Q(nom__iexact=nom_naiss) & Q(prenom__icontains=prenom) & Q(date_naiss=date_naiss_iso)
@@ -231,10 +201,7 @@ def search_patient(nom_naiss, nom_usage, prenom, date_naiss_iso):
     return inseepatient
 
 
-# Main function with batch processing
-
-
-def get_verification_results(df):
+def get_verification_results(df: pd.DataFrame) -> list:
     date_formats = ["%d/%m/%Y", "%Y-%m-%d"]
     verification_results = []
     batch_size = 300
@@ -263,8 +230,6 @@ def get_verification_results(df):
 
 
 # --------------------------------------------------------------------------------- Display results
-
-
 def import_file(request):
     if request.method == "POST":
         form = ImportFileForm(request.POST, request.FILES)
@@ -283,6 +248,7 @@ def import_file(request):
                 df = import_data_from_file(file)
 
                 verification_results = get_verification_results(df)
+
                 request.session["verification_results"] = verification_results
                 return render(
                     request,
