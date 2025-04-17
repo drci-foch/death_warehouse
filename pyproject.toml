@@ -5,9 +5,16 @@ description = ""
 readme = "README.md"
 requires-python = "~=3.12"
 dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff>=0, <1",
+]
+
 [tool.ruff]
-line-length = 120  # change according to your project
+line-length = 120
 target-version = 'py312'
+
 [tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
@@ -25,9 +32,4 @@ select = [
 ]
 ignore = [
     "PTH123"  # use Path.open() instead of builtin open()
-]
-
-[dependency-groups]
-dev = [
-    "ruff>=0.11.6",
 ]
