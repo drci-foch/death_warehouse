@@ -1,0 +1,147 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Statistiques d'Utilisation{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .stats-container {
+        margin: 20px;
+        max-width: 1200px;
+    }
+
+    .stats-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        padding: 20px;
+    }
+
+    .stats-title {
+        color: #00487E;
+        margin-top: 0;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+
+    .stats-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .stats-table th,
+    .stats-table td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+
+    .stats-table th {
+        background-color: #f9f9f9;
+    }
+
+    .stats-table tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .chart-container {
+        height: 300px;
+        margin: 20px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="stats-container">
+    <h1>Statistiques d'Utilisation de l'Application</h1>
+
+    <div class="stats-card">
+        <h2 class="stats-title">Nombre total d'actions par type</h2>
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Nombre</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in action_counts %}
+                <tr>
+                    <td>{{ item.action }}</td>
+                    <td>{{ item.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="stats-card">
+        <h2 class="stats-title">Statistiques des 30 derniers jours</h2>
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Action</th>
+                    <th>Nombre</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in daily_stats %}
+                <tr>
+                    <td>{{ item.day|date:"d/m/Y" }}</td>
+                    <td>{{ item.action }}</td>
+                    <td>{{ item.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="stats-card">
+        <h2 class="stats-title">Statistiques mensuelles</h2>
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>Mois</th>
+                    <th>Action</th>
+                    <th>Nombre</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in monthly_stats %}
+                <tr>
+                    <td>{{ item.month|date:"F Y" }}</td>
+                    <td>{{ item.action }}</td>
+                    <td>{{ item.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="stats-card">
+        <h2 class="stats-title">Activité récente</h2>
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Date et heure</th>
+                    <th>Adresse IP</th>
+                    <th>Détails</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_logs %}
+                <tr>
+                    <td>{{ log.action }}</td>
+                    <td>{{ log.timestamp|date:"d/m/Y H:i:s" }}</td>
+                    <td>{{ log.user_ip }}</td>
+                    <td>{{ log.details|default:"-" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
