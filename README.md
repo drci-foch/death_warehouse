@@ -5,7 +5,7 @@
 This Django web application is designed to facilitate the updating of patient death records for Hôpital Foch. The system fetches data from INSEE (the French National Institute of Statistics and Economic Studies) to provide a reliable source of information for medical professionals and researchers. Once the data is processed and updated, it is automatically synchronized with the Oracle database of Hôpital Foch.
 
 <p align="center">
-    <img src="./CaptureHome.PNG" width="700">
+    <img src="./readme_images/CaptureHome.PNG" width="700">
 </p>
 
 ## Features 🚒
