@@ -29,6 +29,34 @@ This Django web application is designed to facilitate the updating of patient de
 
 - Probabilistic algorithm to infer individuals whose birth name is unknown based on their place of birth and other available information.
 
+## Running Death Warehouse Docker Image
+
+### Quick Start
+
+```bash
+docker run -p 8000:8000 -v /your/path/to/db/directory:/data/db -it death_app:0.1.1
+```
+
+### Parameters Explained
+- `-p 8000:8000`: Maps container port to local port
+- `-v /your/path/to/db/directory:/data/db`: Mounts your local database directory
+- `-it`: Interactive mode with terminal
+- `death_app:0.1.1`: Image name and version
+
+### First-time Setup
+Run migrations before first use:
+```bash
+docker run -v /your/path/to/db/directory:/data/db -it death_app:0.1.1 python death_warehouse_webapp/manage.py migrate
+```
+
+### Access
+Open http://localhost:8000 in your browser
+
+### Notes
+- Ensure your database directory exists
+- Press CTRL+C to stop the container
+- Restart container if you encounter "database is locked" errors
+
 ## Acknowledgments 💊
 This project fetches data from [INSEE's dataset on deceased individuals](https://www.data.gouv.fr/fr/datasets/fichier-des-personnes-decedees/).
 
