@@ -237,11 +237,13 @@ def ask_initialization():
 
     while True:
         response = input("Est-ce une première initialisation de la base ? (oui/non): ").lower().strip()
-        if response in ['oui', 'o', 'yes', 'y']:
+        if response in ["oui", "o", "yes", "y"]:
             return True
-        elif response in ['non', 'n', 'no']:
+        elif response in ["non", "n", "no"]:
             # Créer le fichier d'initialisation pour ne pas redemander la prochaine fois
-            INIT_FLAG_FILE.write_text(f"Initialisation ignorée: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            INIT_FLAG_FILE.write_text(
+                f"Initialisation ignorée: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            )
             return False
         else:
             print("Veuillez répondre par 'oui' ou 'non'.")
