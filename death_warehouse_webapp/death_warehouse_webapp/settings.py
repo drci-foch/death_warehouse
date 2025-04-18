@@ -75,18 +75,12 @@ WSGI_APPLICATION = "death_warehouse_webapp.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+PROJECT_ROOT = BASE_DIR.parent
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "mydatabase",
-    },
-    "my_oracle": {
-        "ENGINE": "django.db.backends.oracle",
-        "NAME": "dwh",
-        "USER": "drci002",
-        "PASSWORD": "Gbu!459deux3",
-        "HOST": "srvapp522",
-        "PORT": "1521",
+        "NAME": PROJECT_ROOT / "db" / "mydatabase",
     },
 }
 

@@ -27,7 +27,7 @@ from pathlib import Path
 SCRIPTS_TO_RUN = [
     "./retrieve_insee_data/00_RetrieveAutomaticFile.py",
     "./retrieve_insee_data/01_ParserINSEE.py",
-    "../deathwarehouse_app/import_data.py",
+    "./retrieve_insee_data/import_data.py",
 ]
 
 # Répertoire de base (dossier contenant ce script)

@@ -12,7 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 site_url = "https://www.data.gouv.fr/fr/datasets/fichier-des-personnes-decedees/"
 
 # Local directory to save downloaded files
-dossier_local = "../.././deces_insee/"
+dossier_local = ".././deces_insee/"
 
 # Create the local directory if it does not exist
 if not Path.exists(dossier_local):

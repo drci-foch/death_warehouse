@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 characters = "/"
-dossier = "../.././deces_insee/"
+dossier = ".././deces_insee/"
 donnees_globales = []
 
 
