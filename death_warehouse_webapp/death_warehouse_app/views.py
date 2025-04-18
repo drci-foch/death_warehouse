@@ -4,8 +4,9 @@ from datetime import datetime
 import openpyxl
 import pandas as pd
 from django.contrib.admin.views.decorators import staff_member_required
+from django.core.cache import cache
 from django.db import connections
-from django.db.models import Count, Q
+from django.db.models import Count, Max, Q
 from django.db.models.functions import TruncDay, TruncMonth
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -85,12 +86,16 @@ def handle_post_request(request):
 
 
 def home(request):
-    # Get the most recent death date from INSEEPatient model
-    latest_death_date = INSEEPatient.objects.order_by("-date_deces").values_list("date_deces", flat=True).first()
+    # Utiliser le cache pour la date de décès la plus récente
+    latest_death_date = cache.get("latest_death_date")
+    if latest_death_date is None:
+        # Si pas en cache, obtenir la valeur et la mettre en cache
+        latest_death_date = INSEEPatient.objects.aggregate(Max("date_deces"))["date_deces__max"]
+        # Cache pour 1 semaine (604800 secondes)
+        cache.set("latest_death_date", latest_death_date, 604800)
 
     if request.method == "POST":
         patients, message, form = handle_post_request(request)
-
         # Log the search action
         if form.is_valid():
             log_details = {
@@ -161,6 +166,7 @@ def search_inseepatient(nom, prenom, date_naiss_iso):
     return INSEEPatient.objects.filter(
         Q(nom__iexact=nom) & (Q(prenom__icontains=prenom) & Q(date_naiss=date_naiss_iso))
     ).first()
+
 
 def create_verification_result(patient, date_naiss_iso, found, ipp=None, source=None):
     if found:
