@@ -15,7 +15,7 @@ Pour arrêter le service: créez un fichier nommé "stop_scheduler" dans le mêm
 import atexit
 import datetime
 import logging
-import os
+import os  # Nécessaire pour certaines opérations non couvertes par pathlib
 import platform
 import subprocess
 import sys
@@ -30,22 +30,29 @@ SCRIPTS_TO_RUN = [
     "./retrieve_insee_data/import_data.py",
 ]
 
+# Scripts d'initialisation (peuvent être différents de SCRIPTS_TO_RUN)
+INIT_SCRIPTS = [
+    "./retrieve_insee_data/01.1_ParserINSEE.py",
+    "./retrieve_insee_data/import_data.py",
+]
+
 # Répertoire de base (dossier contenant ce script)
-BASE_DIR = Path.parent(Path.resolve(__file__))
-LOG_DIR = Path(BASE_DIR) / "logs"
-PID_FILE = Path(BASE_DIR) / "scheduler.pid"
-STOP_FILE = Path(BASE_DIR) / "stop_scheduler"
+BASE_DIR = Path(__file__).resolve().parent
+LOG_DIR = BASE_DIR / "logs"
+PID_FILE = BASE_DIR / "scheduler.pid"
+STOP_FILE = BASE_DIR / "stop_scheduler"
+INIT_FLAG_FILE = BASE_DIR / "init_completed"
 
 # Créer le dossier de logs s'il n'existe pas
-if not Path.exists(LOG_DIR):
-    Path.mkdir(LOG_DIR, parents=True)
+if not LOG_DIR.exists():
+    LOG_DIR.mkdir(parents=True)
 
 # Configurer la journalisation
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler(Path(LOG_DIR) / "scheduler.log"),
+        logging.FileHandler(LOG_DIR / "scheduler.log"),
         logging.StreamHandler(),
     ],
 )
@@ -53,15 +60,15 @@ logging.basicConfig(
 
 def run_script(script_path):
     """Exécute un script Python et journalise le résultat"""
-    full_path = Path(BASE_DIR) / script_path
+    full_path = BASE_DIR / script_path
 
-    if not Path.exists(full_path):
+    if not full_path.exists():
         logging.error(f"Le script {full_path} n'existe pas.")
         return False
 
     try:
         logging.info(f"Exécution du script: {script_path}")
-        process = subprocess.run([sys.executable, full_path], capture_output=True, text=True)
+        process = subprocess.run([sys.executable, str(full_path)], capture_output=True, text=True)
 
         # Journaliser la sortie
         if process.stdout:
@@ -112,14 +119,13 @@ def time_until_next_execution():
 
 def write_pid_file():
     """Écrit le PID dans un fichier"""
-    with open(PID_FILE, "w") as f:
-        f.write(str(os.getpid()))
+    PID_FILE.write_text(str(os.getpid()))
 
 
 def remove_pid_file():
     """Supprime le fichier PID lors de la sortie"""
-    if Path.exists(PID_FILE):
-        Path.unlink(PID_FILE)
+    if PID_FILE.exists():
+        PID_FILE.unlink()
 
 
 def run_monthly_tasks():
@@ -136,6 +142,25 @@ def run_monthly_tasks():
             failure_count += 1
 
     logging.info(f"=== Fin de l'exécution: {success_count} réussis, {failure_count} échoués ===")
+
+
+def run_init_tasks():
+    """Exécute les scripts d'initialisation"""
+    logging.info(f"=== Début de l'initialisation de la base {datetime.datetime.now()} ===")
+
+    success_count = 0
+    failure_count = 0
+
+    for script in INIT_SCRIPTS:
+        if run_script(script):
+            success_count += 1
+        else:
+            failure_count += 1
+
+    logging.info(f"=== Fin de l'initialisation: {success_count} réussis, {failure_count} échoués ===")
+
+    # Créer le fichier d'initialisation complétée
+    INIT_FLAG_FILE.write_text(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 
 def daemonize():
@@ -174,17 +199,16 @@ def daemonize():
 
     with open(os.devnull) as f:
         os.dup2(f.fileno(), sys.stdin.fileno())
-    with open(Path(LOG_DIR) / "stdout.log", "a+") as f:
+    with open(LOG_DIR / "stdout.log", "a+") as f:
         os.dup2(f.fileno(), sys.stdout.fileno())
-    with open(Path(LOG_DIR) / "stderr.log", "a+") as f:
+    with open(LOG_DIR / "stderr.log", "a+") as f:
         os.dup2(f.fileno(), sys.stderr.fileno())
 
 
 def check_already_running() -> bool:
     """Vérifie si le script est déjà en cours d'exécution"""
-    if Path.exists(PID_FILE):
-        with open(PID_FILE) as f:
-            old_pid = f.read().strip()
+    if PID_FILE.exists():
+        old_pid = PID_FILE.read_text().strip()
 
         # Vérifier si le processus existe toujours
         try:
@@ -200,9 +224,27 @@ def check_already_running() -> bool:
                 return True
         except (OSError, subprocess.SubprocessError):
             # Le processus n'existe plus
-            Path.unlink(PID_FILE)
+            PID_FILE.unlink()
 
     return False
+
+
+def ask_initialization():
+    """Demande à l'utilisateur s'il s'agit d'une première initialisation"""
+    # Si le fichier d'initialisation existe déjà, pas besoin de demander
+    if INIT_FLAG_FILE.exists():
+        return False
+
+    while True:
+        response = input("Est-ce une première initialisation de la base ? (oui/non): ").lower().strip()
+        if response in ['oui', 'o', 'yes', 'y']:
+            return True
+        elif response in ['non', 'n', 'no']:
+            # Créer le fichier d'initialisation pour ne pas redemander la prochaine fois
+            INIT_FLAG_FILE.write_text(f"Initialisation ignorée: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            return False
+        else:
+            print("Veuillez répondre par 'oui' ou 'non'.")
 
 
 def main():
@@ -210,11 +252,19 @@ def main():
 
     # Vérifier si le script est déjà en cours d'exécution
     if check_already_running():
-        print(f"Le planificateur est déjà en cours d'exécution (PID: {open(PID_FILE).read().strip()})")
+        print(f"Le planificateur est déjà en cours d'exécution (PID: {PID_FILE.read_text().strip()})")
         sys.exit(1)
+
+    # Demander s'il s'agit d'une première initialisation
+    init_required = ask_initialization()
 
     # Enregistrer le handler de nettoyage
     atexit.register(remove_pid_file)
+
+    # Si initialisation requise, exécuter les scripts d'initialisation avant de continuer
+    if init_required:
+        run_init_tasks()
+        print("Initialisation terminée. Démarrage du planificateur mensuel...")
 
     # Devenir un daemon sous Unix
     if platform.system() != "Windows":
@@ -229,9 +279,9 @@ def main():
     try:
         while True:
             # Vérifier si le fichier d'arrêt existe
-            if Path.exists(STOP_FILE):
+            if STOP_FILE.exists():
                 logging.info("Fichier d'arrêt détecté, arrêt du planificateur...")
-                Path.unlink(STOP_FILE)
+                STOP_FILE.unlink()
                 break
 
             # Exécuter les tâches si c'est le premier jour du mois après 2h du matin
@@ -248,9 +298,9 @@ def main():
                     time.sleep(min(300, sleep_time))  # 5 minutes ou moins
                     sleep_time -= 300
 
-                    if Path.exists(STOP_FILE):
+                    if STOP_FILE.exists():
                         logging.info("Fichier d'arrêt détecté, arrêt du planificateur...")
-                        Path.unlink(STOP_FILE)
+                        STOP_FILE.unlink()
                         return
             else:
                 # Calculer le temps jusqu'à la prochaine exécution
@@ -262,9 +312,9 @@ def main():
                     time.sleep(min(300, sleep_time))  # 5 minutes ou moins
                     sleep_time -= 300
 
-                    if Path.exists(STOP_FILE):
+                    if STOP_FILE.exists():
                         logging.info("Fichier d'arrêt détecté, arrêt du planificateur...")
-                        Path.unlink(STOP_FILE)
+                        STOP_FILE.unlink()
                         return
 
     except KeyboardInterrupt:

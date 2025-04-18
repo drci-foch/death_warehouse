@@ -1,11 +1,12 @@
 import csv
+import gc
 import os
 import sys
 from datetime import datetime
 from pathlib import Path
 
 import django
-from django.db import transaction
+from django.db import connection, transaction
 from loguru import logger
 
 # Use relative paths based on the script location
@@ -31,27 +32,30 @@ logger.remove()  # Remove default handler
 logger.add(sys.stderr, format="{time} {level} {message}", level="INFO")
 logger.add("import_insee.log", rotation="10 MB", level="DEBUG")
 
+
 def import_data_from_csv(file_path):
     # Clear existing data
     logger.info(f"Starting import from {file_path}")
     logger.info("Deleting existing records...")
-    deleted_count = INSEEPatient.objects.all().delete()
-    logger.info(f"Deleted {deleted_count} existing records")
 
+    # Use raw SQL for faster deletion
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM death_warehouse_app_inseepatient")
+        logger.info("Deleted all existing records")
+
+    batch_size = 10000  # Larger batch size
     patients_to_create = []
     row_count = 0
     error_count = 0
+    batch_count = 0
 
     logger.info("Reading CSV file...")
-    with open(
-        file_path, encoding="latin-1", errors="ignore"
-    ) as csvfile:
+    with open(file_path, encoding="latin-1", errors="ignore") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             row_count += 1
-            if row_count % 10000 == 0:
-                logger.info(f"Processed {row_count} rows so far...")
 
+            # Process row data
             nom = row.get("Nom", "Nom manquant")
             prenom = row.get("Prenom", "Prénom Manquant")
             date_naiss = row.get("Date de naissance", None)
@@ -60,14 +64,13 @@ def import_data_from_csv(file_path):
             code_naiss = row.get("Code lieu de naissance", "00000")
             date_deces = row.get("Date de deces", None)
 
-            # Convert date_naiss and date_deces to date objects (YYYY/MM/DD format)
+            # Convert dates
             if date_naiss:
                 try:
                     date_naiss = datetime.strptime(date_naiss, "%Y/%m/%d").date()
                 except ValueError:
                     date_naiss = None
                     error_count += 1
-                    logger.warning(f"Invalid date format for date of birth: {row.get('Date de naissance')} at row {row_count}")
 
             if date_deces:
                 try:
@@ -75,9 +78,8 @@ def import_data_from_csv(file_path):
                 except ValueError:
                     date_deces = None
                     error_count += 1
-                    logger.warning(f"Invalid date format for death date: {row.get('Date de deces')} at row {row_count}")
 
-            # Create INSEEPatient instance (not saved to database yet)
+            # Create patient object
             patients_to_create.append(
                 INSEEPatient(
                     nom=nom,
@@ -90,20 +92,40 @@ def import_data_from_csv(file_path):
                 )
             )
 
-            # Process in batches to avoid memory issues with large files
-            if len(patients_to_create) >= 5000:
-                logger.info(f"Bulk creating batch of {len(patients_to_create)} records...")
+            # Process in larger batches
+            if len(patients_to_create) >= batch_size:
+                batch_count += 1
+                start_time = datetime.now()
+                logger.info(f"Creating batch {batch_count} ({len(patients_to_create)} records)...")
+
                 with transaction.atomic():
                     INSEEPatient.objects.bulk_create(patients_to_create)
-                patients_to_create = []
 
-    # Bulk create remaining instances
+                # Calculate and log performance metrics
+                end_time = datetime.now()
+                duration = (end_time - start_time).total_seconds()
+                records_per_second = len(patients_to_create) / duration if duration > 0 else 0
+
+                logger.info(
+                    f"Batch {batch_count} completed in {duration:.2f} seconds ({records_per_second:.1f} records/sec)"
+                )
+                logger.info(f"Total progress: {row_count} rows processed")
+
+                # Clear the list and force garbage collection
+                patients_to_create = []
+                gc.collect()
+
+    # Process remaining records
     if patients_to_create:
-        logger.info(f"Bulk creating final batch of {len(patients_to_create)} records...")
+        batch_count += 1
+        logger.info(f"Creating final batch {batch_count} ({len(patients_to_create)} records)...")
+
         with transaction.atomic():
             INSEEPatient.objects.bulk_create(patients_to_create)
 
     logger.success(f"Import completed: {row_count} total rows processed with {error_count} date errors")
+    logger.info(f"Average batch size: {row_count / batch_count if batch_count > 0 else 0:.1f} records")
+
 
 if __name__ == "__main__":
     try:

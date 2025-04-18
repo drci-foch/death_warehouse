@@ -109,6 +109,6 @@ def process_files_in_batches(dossier, batch_size):
 
 # Main execution
 if __name__ == "__main__":
-    dossier = ".././deces_insee/initial_import/"
+    dossier = "../../db/initial_import/"
     batch_size = 100
     process_files_in_batches(dossier, batch_size)
