@@ -74,16 +74,36 @@ WSGI_APPLICATION = "death_warehouse_webapp.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+# Build paths inside the project like this: BASE_DIR / 'subdir'
 
 PROJECT_ROOT = BASE_DIR.parent
+
+# Chercher le fichier de configuration dans plusieurs emplacements possibles
+POSSIBLE_CONFIG_PATHS = [
+    Path("/app/db_config.txt"),  # Chemin absolu dans Docker
+    BASE_DIR / "db_config.txt",  # Dans le répertoire du projet
+    PROJECT_ROOT / "db_config.txt",  # Dans le répertoire parent
+]
+
+
+def get_db_path():
+    for config_path in POSSIBLE_CONFIG_PATHS:
+        if config_path.exists():
+            try:
+                return Path(config_path.read_text().strip())
+            except (OSError, ValueError, UnicodeDecodeError) as e:
+                print(f"Erreur lors de la lecture de {config_path}: {e}")
+
+    # Chemin par défaut si aucun fichier de configuration n'est trouvé
+    return PROJECT_ROOT / "db" / "mydatabase"
+
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": PROJECT_ROOT / "db" / "mydatabase",
+        "NAME": get_db_path(),
     },
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
